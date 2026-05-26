@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.qavo</groupId>
+    <artifactId>qavo-bom</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Qavo Bill of Materials</name>
+    <description>
+        Bill of Materials for the Qavo backend platform. Pins consistent versions of every
+        Qavo module and the third-party libraries the platform standardizes on, so that a
+        consuming application declares a single Qavo version and selects modules without
+        managing individual versions. This BOM is intentionally standalone (no parent) so it
+        can be imported in isolation.
+    </description>
+    <url>https://github.com/davidfriscia/qavo-be</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/davidfriscia/qavo-be.git</connection>
+        <developerConnection>scm:git:git@github.com:davidfriscia/qavo-be.git</developerConnection>
+        <url>https://github.com/davidfriscia/qavo-be</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Spring Boot line the platform is built and validated against. -->
+        <spring-boot.version>3.3.5</spring-boot.version>
+
+        <!-- Third-party libraries the platform standardizes on. -->
+        <springdoc.version>2.6.0</springdoc.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <mapstruct.version>1.6.2</mapstruct.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Inherit Spring Boot's curated dependency set. Importing it here (rather than
+                 relying on a parent) keeps this BOM self-contained for downstream consumers. -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Resilience4j (Spring Boot 3 integration). -->
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-bom</artifactId>
+                <version>${resilience4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- springdoc-openapi (OpenAPI 3 + Swagger UI for Spring Boot 3 MVC). -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <!-- Structured JSON logging encoder for Logback. -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+
+            <!-- MapStruct compile-time DTO/entity mapping. -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- ============================================================= -->
+            <!-- Qavo platform modules                                         -->
+            <!-- ============================================================= -->
+
+            <!-- Core platform -->
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-observability</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-validation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-openapi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-starter-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Authentication plugins -->
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-auth-login</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-auth-registration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Test support -->
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-test-support</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

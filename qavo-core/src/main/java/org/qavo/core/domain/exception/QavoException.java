@@ -1,0 +1,47 @@
+/* SPDX-License-Identifier: Apache-2.0 — Copyright 2026 Qavo. See LICENSE. */
+package org.qavo.core.domain.exception;
+
+import java.util.List;
+
+import org.qavo.core.api.error.CoreProblemType;
+import org.qavo.core.api.error.FieldErrorDetail;
+import org.qavo.core.api.error.ProblemType;
+
+/**
+ * Root of the platform exception hierarchy. Carries a {@link ProblemType} so the global
+ * exception handler can translate any platform or application exception into the standard
+ * RFC 9457 response without a per-type {@code instanceof} ladder (see architecture &sect;5.2).
+ *
+ * <p>Applications extend the concrete subclasses (or this class) and may supply their own
+ * {@link ProblemType} implementations for domain-specific conditions.
+ */
+public abstract class QavoException extends RuntimeException {
+
+    private final transient ProblemType problemType;
+    private final transient List<FieldErrorDetail> fieldErrors;
+
+    protected QavoException(ProblemType problemType, String message) {
+        this(problemType, message, List.of(), null);
+    }
+
+    protected QavoException(ProblemType problemType, String message, Throwable cause) {
+        this(problemType, message, List.of(), cause);
+    }
+
+    protected QavoException(ProblemType problemType, String message,
+                            List<FieldErrorDetail> fieldErrors, Throwable cause) {
+        super(message, cause);
+        this.problemType = problemType != null ? problemType : CoreProblemType.INTERNAL_ERROR;
+        this.fieldErrors = fieldErrors != null ? List.copyOf(fieldErrors) : List.of();
+    }
+
+    /** The problem classification used to render the error response. */
+    public ProblemType getProblemType() {
+        return problemType;
+    }
+
+    /** Field-level details, empty unless this is a validation-style failure. */
+    public List<FieldErrorDetail> getFieldErrors() {
+        return fieldErrors;
+    }
+}

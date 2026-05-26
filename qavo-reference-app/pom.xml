@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.qavo</groupId>
+        <artifactId>qavo-parent</artifactId>
+        <version>0.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>qavo-reference-app</artifactId>
+    <name>Qavo Reference Application</name>
+    <description>
+        A minimal, runnable application built on the Qavo platform (architecture &sect;7, &sect;8).
+        It composes the core web starter plus the login and registration plugins, follows the
+        layered package convention, and serves both as an onboarding example and as a continuous
+        integration check that platform updates do not break consumers. It is not published as a
+        library.
+    </description>
+
+    <dependencies>
+        <!-- The "always import" core starter — brings the full secure-by-default baseline. -->
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-starter-web</artifactId>
+        </dependency>
+
+        <!-- Optional capability plugins this application chose to compose. -->
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-auth-login</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-auth-registration</artifactId>
+        </dependency>
+
+        <!-- Persistence: JPA is required explicitly because qavo-security declares it optional. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <!-- Drivers: H2 for a zero-setup local run; PostgreSQL for production-like environments. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

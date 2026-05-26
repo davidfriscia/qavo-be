@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured JSON logging for the Qavo platform (see architecture §5.3).
+
+  Applications opt in by adding to their own logback-spring.xml:
+
+      <include resource="org/qavo/observability/logback-json.xml"/>
+      <root level="INFO">
+          <appender-ref ref="QAVO_JSON"/>
+      </root>
+
+  Every entry carries the enforced MDC fields (traceId, appName, userId) so logs are
+  correlatable with traces and metrics. The encoder emits one JSON object per line, suitable
+  for collection by Loki/ELK and correlation by traceId.
+-->
+<included>
+    <appender name="QAVO_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>appName</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <message>message</message>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <stackTrace>stackTrace</stackTrace>
+            </fieldNames>
+        </encoder>
+    </appender>
+</included>

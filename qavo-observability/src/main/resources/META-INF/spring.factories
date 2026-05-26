@@ -1,0 +1,3 @@
+# Environment post-processor contributing the platform's observability defaults.
+org.springframework.boot.env.EnvironmentPostProcessor=\
+org.qavo.observability.autoconfigure.QavoObservabilityEnvironmentPostProcessor

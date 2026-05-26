@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Reference application logging.
+
+  Demonstrates the platform's structured-logging contract (architecture §5.3): the `prod` profile
+  emits one JSON object per line (with the enforced traceId/appName/userId MDC fields) by including
+  the appender shipped in qavo-observability, while local development keeps the readable console
+  pattern. Applications opt into JSON exactly this way.
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <include resource="org/qavo/observability/logback-json.xml"/>
+
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="QAVO_JSON"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

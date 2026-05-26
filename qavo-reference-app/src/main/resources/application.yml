@@ -1,0 +1,48 @@
+# Reference application configuration.
+#
+# Note the qavo.* / app.* split (architecture §5.6): platform parameters live under qavo.*,
+# application-specific parameters under app.*. Most platform behavior is active by default through
+# auto-configuration; only application-specific values are declared here.
+
+spring:
+  application:
+    name: qavo-reference-app
+  datasource:
+    # Zero-setup local run uses in-memory H2. Override via SPRING_DATASOURCE_* for PostgreSQL.
+    url: jdbc:h2:mem:qavo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+  jpa:
+    # Flyway owns the schema; Hibernate only validates the mapping against it.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    # The application's own migrations live here, starting at V0100 (platform reserves V0001–V0099).
+    # Plugin migration locations are merged automatically by the platform.
+    locations: classpath:db/migration
+
+qavo:
+  api:
+    title: Qavo Reference API
+    version: v1
+    description: Demonstration API showcasing the Qavo platform foundation.
+  observability:
+    application-name: qavo-reference-app
+  security:
+    strategy: local
+  auth:
+    registration:
+      self-service: true
+      require-email-verification: false
+    login:
+      enabled: true
+  features:
+    # Example feature flag (architecture §5.6). Toggle without a rebuild via configuration.
+    widget-export: false
+
+# Application-specific configuration namespace.
+app:
+  catalog:
+    max-widgets-per-page: 200

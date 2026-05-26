@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /c/Users/david/src/qavo-be 2>/dev/null; echo '---MEMORY---'; ls -la /c/Users/david/.claude/projects/C--Users-david-src-qavo-be/memory/ 2>/dev/null)",
+      "Bash(java -version)",
+      "Bash(mvn -version)",
+      "PowerShell($j=Get-Command java -ErrorAction SilentlyContinue; if\\($j\\){& java -version 2>&1}; Write-Output '---MVN---'; $m=Get-Command mvn -ErrorAction SilentlyContinue; if\\($m\\){$m.Source}else{'mvn not found'}; Write-Output '---JAVA HOMES---'; Get-ChildItem 'C:\\\\Program Files\\\\Java' -ErrorAction SilentlyContinue | Select-Object Name; Get-ChildItem 'C:\\\\Program Files\\\\Eclipse Adoptium' -ErrorAction SilentlyContinue | Select-Object Name)",
+      "PowerShell($j='C:\\\\Users\\\\david\\\\portable\\\\jdk-21.0.11'; $m='C:\\\\Users\\\\david\\\\portable\\\\apache-maven-3.9.16'; Write-Output \"JDK exists: $\\(Test-Path $j\\)\"; Write-Output \"Maven exists: $\\(Test-Path $m\\)\"; if\\(Test-Path \"$j\\\\bin\\\\java.exe\"\\){& \"$j\\\\bin\\\\java.exe\" -version 2>&1}; if\\(Test-Path \"$m\\\\bin\\\\mvn.cmd\"\\){Write-Output 'mvn.cmd found'})",
+      "PowerShell($env:JAVA_HOME='C:\\\\Users\\\\david\\\\portable\\\\jdk-21.0.11'; $env:PATH=\"$env:JAVA_HOME\\\\bin;C:\\\\Users\\\\david\\\\portable\\\\apache-maven-3.9.16\\\\bin;$env:PATH\"; Set-Location 'C:\\\\Users\\\\david\\\\src\\\\qavo-be'; mvn -version)"
+    ]
+  }
+}

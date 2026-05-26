@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.qavo</groupId>
+        <artifactId>qavo-parent</artifactId>
+        <version>0.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>qavo-core</artifactId>
+    <name>Qavo Core</name>
+    <description>
+        Core abstractions and contracts of the Qavo platform: API conventions, the RFC 9457
+        Problem Details model, the exception hierarchy, the pagination contract, the security
+        context abstraction, the plugin SPI, and shared configuration properties. The core is
+        deliberately small and stable; capabilities are delivered as separate plugins.
+    </description>
+
+    <dependencies>
+        <!-- Brings spring-core, spring-context, Boot binding and logging facade. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <!-- ProblemDetail, HttpStatus and the web types used by the error contract. -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <!-- Pagination contract references Spring Data's Pageable/Sort abstractions. -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+        </dependency>
+
+        <!-- Optional: the modular Flyway migration-location aggregation activates only when
+             Flyway is present. Plugins each contribute their own migration location. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Generates configuration metadata for IDE assistance on qavo.* properties. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

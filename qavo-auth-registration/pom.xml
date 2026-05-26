@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.qavo</groupId>
+        <artifactId>qavo-parent</artifactId>
+        <version>0.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>qavo-auth-registration</artifactId>
+    <name>Qavo Auth — Registration Plugin</name>
+    <description>
+        Optional plugin providing self-service user registration against the local auth store
+        (architecture &sect;5.5, &sect;6). Owns its own Flyway migration for verification tokens and
+        auto-configures only when the local auth baseline is active. Removable by dropping the
+        dependency.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

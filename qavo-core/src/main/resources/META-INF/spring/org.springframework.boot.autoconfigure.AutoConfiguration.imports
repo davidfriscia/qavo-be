@@ -1,0 +1,2 @@
+org.qavo.core.autoconfigure.QavoCoreAutoConfiguration
+org.qavo.core.autoconfigure.QavoFlywayAutoConfiguration

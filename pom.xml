@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.qavo</groupId>
+    <artifactId>qavo-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Qavo Backend Platform (Parent)</name>
+    <description>
+        Reactor parent for the Qavo backend platform: a reusable, modular Spring Boot
+        foundation that centralizes cross-cutting concerns and is consumed by applications
+        through a BOM, a core starter, and independently versioned capability plugins.
+    </description>
+    <url>https://github.com/davidfriscia/qavo-be</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Qavo</name>
+        <url>https://qavo.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>qavo-maintainers</id>
+            <name>Qavo Maintainers</name>
+            <url>https://github.com/davidfriscia/qavo</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/davidfriscia/qavo-be.git</connection>
+        <developerConnection>scm:git:git@github.com:davidfriscia/qavo-be.git</developerConnection>
+        <url>https://github.com/davidfriscia/qavo-be</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <modules>
+        <module>qavo-bom</module>
+        <module>qavo-core</module>
+        <module>qavo-observability</module>
+        <module>qavo-validation</module>
+        <module>qavo-security</module>
+        <module>qavo-openapi</module>
+        <module>qavo-starter-web</module>
+        <module>qavo-auth-login</module>
+        <module>qavo-auth-registration</module>
+        <module>qavo-test-support</module>
+        <module>qavo-reference-app</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Pinned for use in the annotation-processor path; aligned with the Spring Boot parent. -->
+        <spring-boot.version>3.3.5</spring-boot.version>
+
+        <!-- Third-party versions not governed by the Spring Boot parent -->
+        <springdoc.version>2.6.0</springdoc.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <mapstruct.version>1.6.2</mapstruct.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- The Qavo BOM governs the versions of every Qavo module and the
+                 third-party libraries the platform standardizes on. Importing it here
+                 keeps the reactor build aligned with what consumers receive. -->
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-configuration-processor</artifactId>
+                                <version>${spring-boot.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
