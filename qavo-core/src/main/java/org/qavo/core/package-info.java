@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 — Copyright 2026 Qavo. See LICENSE. */
+/* SPDX-License-Identifier: MIT — Copyright 2026 Qavo. See LICENSE. */
 
 /**
  * Qavo core: the small, stable foundation every Qavo-based application depends on.

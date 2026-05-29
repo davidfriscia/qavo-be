@@ -20,7 +20,7 @@ hardcoded.
 | `qavo.api.description` | String | `API built on the Qavo platform.` | OpenAPI description. |
 | `qavo.api.contact-name` | String | `Qavo` | OpenAPI contact name. |
 | `qavo.api.contact-email` | String | `support@qavo.org` | OpenAPI contact email. |
-| `qavo.api.license-name` | String | `Apache-2.0` | OpenAPI license name. |
+| `qavo.api.license-name` | String | `MIT` | OpenAPI license name. |
 
 ## `qavo.error.*` — Problem Details (`qavo-core`)
 

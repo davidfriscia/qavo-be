@@ -9,7 +9,7 @@ contributions under the standards below.
   and owned by the person submitting it. Qavo is developed with AI assistance under human review and
   accountability (architecture §12); the same quality and security bar applies to everyone.
 - **Licensing & provenance.** By contributing you agree your contribution is licensed under the
-  project's [Apache-2.0](LICENSE) license, and you must not introduce code whose provenance or
+  project's [MIT](LICENSE) license, and you must not introduce code whose provenance or
   license is unclear.
 - **Be respectful.** See the [Code of Conduct](CODE_OF_CONDUCT.md).
 

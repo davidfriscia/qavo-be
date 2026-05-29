@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 — Copyright 2026 Qavo. See LICENSE. */
+/* SPDX-License-Identifier: MIT — Copyright 2026 Qavo. See LICENSE. */
 package org.qavo.core.config;
 
 import java.util.LinkedHashMap;
@@ -68,7 +68,7 @@ public class QavoProperties {
         private String contactEmail = "support@qavo.org";
 
         /** License name for the OpenAPI info block. */
-        private String licenseName = "Apache-2.0";
+        private String licenseName = "MIT";
 
         public String getBasePath() {
             return basePath;

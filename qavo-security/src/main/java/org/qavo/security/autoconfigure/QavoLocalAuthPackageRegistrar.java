@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: Apache-2.0 — Copyright 2026 Qavo. See LICENSE. */
+/* SPDX-License-Identifier: MIT — Copyright 2026 Qavo. See LICENSE. */
 package org.qavo.security.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
