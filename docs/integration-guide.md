@@ -20,7 +20,7 @@ third-party libraries the platform standardizes on. Then declare modules **witho
     <dependency>
       <groupId>org.qavo</groupId>
       <artifactId>qavo-bom</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
+      <version>0.0.1-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -42,6 +42,16 @@ third-party libraries the platform standardizes on. Then declare modules **witho
   <dependency>
     <groupId>org.qavo</groupId>
     <artifactId>qavo-auth-registration</artifactId>
+  </dependency>
+
+  <!-- Optional cross-cutting modules — add when needed. -->
+  <dependency>
+    <groupId>org.qavo</groupId>
+    <artifactId>qavo-resilience</artifactId>   <!-- resilient outbound HTTP client -->
+  </dependency>
+  <dependency>
+    <groupId>org.qavo</groupId>
+    <artifactId>qavo-auditing</artifactId>     <!-- JPA created/modified auditing -->
   </dependency>
 
   <!-- Persistence is the application's choice; qavo-security treats JPA as optional. -->
@@ -154,6 +164,63 @@ their own migrations at `V0100` to avoid collisions in the shared Flyway history
   `qavo.auth.registration.self-service`).
 - **Remove:** drop the dependency. Its code, endpoints and table ownership leave with it.
 
+## 6a. Resilient outbound HTTP calls (`qavo-resilience`)
+
+Declare each upstream backend under `qavo.resilience.http.clients.<name>`; the platform builds one
+`QavoHttpClient` per entry, looks up the Resilience4j retry + circuit-breaker instances by the same
+`<name>` from the standard registries, and propagates the current `traceId` on every request under
+`qavo.resilience.http.trace-header` (default `X-Trace-Id`). See
+[ADR 0008](adr/0008-resilient-outbound-http-client.md).
+
+```yaml
+qavo:
+  resilience:
+    http:
+      clients:
+        billing:
+          base-url: https://billing.internal.example.com
+          connect-timeout: PT2S
+          read-timeout: PT10S
+resilience4j:
+  retry.instances.billing:
+    max-attempts: 3
+    wait-duration: PT1S
+  circuitbreaker.instances.billing:
+    sliding-window-size: 10
+    failure-rate-threshold: 50
+```
+
+```java
+@Service
+class BillingClient {
+    private final QavoHttpClient http;
+    BillingClient(QavoHttpClientRegistry registry) {
+        this.http = registry.get("billing");
+    }
+    Invoice fetch(String id) {
+        return http.get("/invoices/" + id, Invoice.class).getBody();
+    }
+}
+```
+
+## 6b. JPA auditing (`qavo-auditing`)
+
+Add the module, then extend `AuditableEntity` on any JPA entity that should carry
+`created_at` / `last_modified_at` / `created_by` / `last_modified_by`. The platform's
+`QavoAuditorAware` resolves the auditor through `SecurityContextAccessor`, so the same wiring
+works under local, OIDC, or hybrid auth. Writes that happen outside an authenticated request
+are recorded as `qavo.auditing.system-principal` (default `"system"`). See
+[ADR 0009](adr/0009-platform-jpa-auditing.md).
+
+```java
+@Entity
+@Table(name = "widgets")
+class Widget extends AuditableEntity {
+    @Id private UUID id;
+    private String name;
+}
+```
+
 ## 7. Extension points
 
 | Extension point | Purpose |
@@ -165,6 +232,8 @@ their own migrations at `V0100` to avoid collisions in the shared Flyway history
 | `QavoPlugin` / `PluginDescriptor` | Register a capability in the plugin inventory |
 | `MigrationLocation` | Contribute a module's Flyway migration location |
 | `FeatureFlagService` | Replace or extend feature-flag evaluation |
+| `QavoHttpClient` / `QavoHttpClientRegistry` | Resilient outbound HTTP calls with traceId propagation |
+| `AuditableEntity` / `AuditorAware<String>` | Standard JPA audit columns; override the auditor bean to use a non-string type |
 | Custom Bean Validation constraints | Reuse `StrongPassword`, `Slug`, or add your own |
 
 See [`best-practices.md`](best-practices.md) for a full plugin development walkthrough.

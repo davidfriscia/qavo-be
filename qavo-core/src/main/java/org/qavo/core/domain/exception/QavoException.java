@@ -2,6 +2,7 @@
 package org.qavo.core.domain.exception;
 
 import java.util.List;
+import java.util.Map;
 
 import org.qavo.core.api.error.CoreProblemType;
 import org.qavo.core.api.error.FieldErrorDetail;
@@ -43,5 +44,15 @@ public abstract class QavoException extends RuntimeException {
     /** Field-level details, empty unless this is a validation-style failure. */
     public List<FieldErrorDetail> getFieldErrors() {
         return fieldErrors;
+    }
+
+    /**
+     * Extension members merged into the Problem Details body by the global exception handler.
+     * Subclasses override to expose machine-readable specifics (e.g. {@code unlocksAt}) without
+     * needing a dedicated handler. Returns an empty map by default so the contract stays
+     * predictable.
+     */
+    public Map<String, Object> getProblemProperties() {
+        return Map.of();
     }
 }

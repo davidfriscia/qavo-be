@@ -19,6 +19,7 @@ public enum CoreProblemType implements ProblemType {
     BUSINESS_RULE("business-rule", "Business rule violation", HttpStatus.UNPROCESSABLE_ENTITY),
     UNAUTHORIZED("unauthorized", "Authentication required", HttpStatus.UNAUTHORIZED),
     FORBIDDEN("forbidden", "Access denied", HttpStatus.FORBIDDEN),
+    ACCOUNT_LOCKED("account-locked", "Account temporarily locked", HttpStatus.LOCKED),
     METHOD_NOT_ALLOWED("method-not-allowed", "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
     UNSUPPORTED_MEDIA_TYPE("unsupported-media-type", "Unsupported media type", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     TOO_MANY_REQUESTS("too-many-requests", "Too many requests", HttpStatus.TOO_MANY_REQUESTS),

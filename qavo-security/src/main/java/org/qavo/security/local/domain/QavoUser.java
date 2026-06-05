@@ -50,6 +50,21 @@ public class QavoUser {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Running count of consecutive failed login attempts since the last success. Reset to zero
+     * on every successful authentication; consulted by the lockout policy.
+     */
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts = 0;
+
+    /**
+     * Instant the temporary lock expires, or {@code null} when the account is not locked. The
+     * account is treated as locked as long as {@code locked_until} is in the future relative to
+     * the lockout-aware clock.
+     */
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "qavo_user_roles",
@@ -122,5 +137,21 @@ public class QavoUser {
 
     public void setRoles(Set<QavoRole> roles) {
         this.roles = roles;
+    }
+
+    public int getFailedLoginAttempts() {
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public Instant getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Instant lockedUntil) {
+        this.lockedUntil = lockedUntil;
     }
 }

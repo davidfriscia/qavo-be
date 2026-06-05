@@ -1,6 +1,6 @@
 # Qavo Backend — Capabilities Matrix
 
-Status of each backend concern at version `0.0.0-SNAPSHOT`.
+Status of each backend concern at version `0.0.1-SNAPSHOT`.
 
 **Legend:** ✅ Implemented · 🟡 Partial · ⛔ Planned (not yet started) · ⬜ Out of scope (deliberate)
 
@@ -10,7 +10,7 @@ Status of each backend concern at version `0.0.0-SNAPSHOT`.
 | 2 | REST conventions | ✅ | Stable | `/api/v1` base via `ApiConventions`, path-based versioning, `PagedResponse` envelope, standard `page/size/sort` | `Deprecation`/`Sunset` header automation |
 | 3 | Error handling (RFC 9457) | ✅ | Stable | `ProblemDetailFactory`, `CoreProblemType`, exception hierarchy, global `@RestControllerAdvice`, `traceId` correlation | Per-type documentation URIs hosting |
 | 4 | Security — abstraction | ✅ | Beta | Pluggable strategy enum, uniform `SecurityContextAccessor`, `AuthenticatedPrincipal`, role/permission split, method security | — |
-| 4a | Security — local auth | 🟡 | Beta | JPA user/role/permission model, `UserDetailsService`, BCrypt, Flyway baseline, `AuthenticationManager` | Account lockout, password reset, Argon2 option |
+| 4a | Security — local auth | ✅ | Beta | JPA user/role/permission model, `UserDetailsService`, BCrypt, Flyway baseline, `AuthenticationManager`, **local JWT issuance with rotating refresh tokens** (JJWT 0.12.x, `POST /api/v1/auth/login` / `/refresh` / `/logout`), **temporary account lockout** after repeated failures (HTTP 423 with `unlocksAt`) | Password reset, Argon2 option |
 | 4b | Security — OIDC/OAuth2 | 🟡 | Beta | Resource-server config, `JwtDecoder` from issuer, claim→authority mapping, hybrid mode | Richer claim mapping, opaque-token support |
 | 4c | Secure headers / TLS / CORS | ✅ | Stable | HSTS, CSP, frame/content-type options, referrer & permissions policy, `forward-headers-strategy`, centralized CORS | Per-route CSP overrides |
 | 5 | Logging & observability | 🟡 | Beta | Structured JSON logging, enforced MDC (`traceId/appName/userId`), correlation filter, Actuator defaults, Micrometer, OTel bridge (optional) | Standard metric set dashboards, log-collection wiring |
@@ -20,10 +20,10 @@ Status of each backend concern at version `0.0.0-SNAPSHOT`.
 | 9 | Validation | ✅ | Stable | Bean Validation integration, `ValidationErrorMapper`, `StrongPassword` & `Slug` constraints, message bundle | More built-in constraints (fiscal code, VAT) |
 | 10 | Testing infrastructure | ✅ | Beta | `AbstractPostgresIntegrationTest` (Testcontainers), `ProblemDetailAssertions`, module + reference-app tests | Slice-test helpers, plugin test harness |
 | 11 | Feature flags | 🟡 | Alpha | `FeatureFlagService`, property-backed impl, `qavo.features.*` | Dynamic DB-backed flags, request-time evaluation |
-| 12 | Resilience (timeout/retry/circuit breaker) | ⛔ | Planned | Resilience4j present in BOM | Qavo HTTP client wiring defaults |
-| 13 | Auditing (created/modified) | ⛔ | Planned | — | Spring Data Auditing wired to security context |
+| 12 | Resilience (timeout/retry/circuit breaker) | ✅ | Beta | `qavo-resilience` module: `QavoHttpClient` over Spring `RestClient`, Resilience4j retry + circuit breaker per declared backend, configurable connect/read timeouts | Bulkhead/rate-limiter helpers, reactive variant |
+| 13 | Auditing (created/modified) | ✅ | Beta | `qavo-auditing` module: `AuditableEntity` `@MappedSuperclass` with `created_at` / `last_modified_at` / `created_by` / `last_modified_by`, `QavoAuditorAware` reading the platform `SecurityContextAccessor`, autoconfigured `@EnableJpaAuditing` | Migration of existing platform entities (`QavoUser`, etc.) onto `AuditableEntity` |
 | 14 | Internationalization (i18n) | ⛔ | Planned | Validation messages externalized | Central message bundle convention + locale resolution |
-| 15 | Inter-service HTTP client | ⛔ | Planned | — | traceId + token propagation, resilience policies |
+| 15 | Inter-service HTTP client | ✅ | Beta | `QavoHttpClient` + `QavoHttpClientRegistry` (`qavo-resilience`): per-backend `RestClient` with traceId header propagation via `TraceContext` and per-client Resilience4j policies | Bearer-token relay helper, mTLS profile |
 | 16 | Secrets management (Vault, etc.) | ⬜ | Out of scope | Env-var supplied secrets | Deferred by architecture §5.5 |
 | 17 | Pluggable config providers | ⬜ | Out of scope | Spring profiles + env vars | Deferred by architecture §5.6 |
 | 18 | Theming, mobile-first/responsive | ⬜ | Frontend | — | Lives in `qavo-fe` |
@@ -35,11 +35,13 @@ Status of each backend concern at version `0.0.0-SNAPSHOT`.
 - **Alpha** — minimal implementation proving the contract; expect change.
 - **Planned** — extension point and/or dependency present; behavior not yet implemented.
 
-## Known limitations at `0.0.0-SNAPSHOT`
+## Known limitations at `0.0.1-SNAPSHOT`
 
-- Local login validates credentials but does **not** yet issue a signed bearer token, so the
-  `/me` endpoint is only meaningful within an authenticated request (e.g. HTTP Basic). Token
-  issuance is the top security roadmap item.
+- Password reset and Argon2 hashing for the local strategy are still pending.
 - Email verification is modeled (flag + token table) but the verification email is not sent.
 - The standard operational metric set and Grafana dashboards are described but not yet bundled.
-- Publishing (Maven Central signing, CI release) is not yet configured.
+- `AuditableEntity` is available but existing platform entities (`QavoUser`, `QavoRole`,
+  `RefreshToken`) have not yet been migrated onto it — deliberately deferred so the new module
+  ships as pure additive capability (see [ADR 0009](adr/0009-platform-jpa-auditing.md)).
+- CI runs `mvn clean verify` on every PR; release publishing (Maven Central signing) is not yet
+  configured.

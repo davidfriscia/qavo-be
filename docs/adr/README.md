@@ -11,6 +11,10 @@ new ADR that supersedes the old one.
 | [0003](0003-rfc9457-problem-details.md) | RFC 9457 Problem Details as the error contract | Accepted |
 | [0004](0004-pluggable-authentication.md) | Pluggable authentication with a uniform security context | Accepted |
 | [0005](0005-modular-flyway-migrations.md) | Modular Flyway migrations with version banding | Accepted |
+| [0006](0006-local-jwt-token-issuance.md) | Local JWT token issuance with rotating refresh tokens | Accepted |
+| [0007](0007-account-lockout.md) | Temporary account lockout after repeated failed logins | Accepted |
+| [0008](0008-resilient-outbound-http-client.md) | Resilient outbound HTTP client | Accepted |
+| [0009](0009-platform-jpa-auditing.md) | Platform JPA auditing wired to the security context | Accepted |
 
 ## Format
 

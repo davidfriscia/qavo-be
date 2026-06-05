@@ -14,7 +14,7 @@ behavior. A fix or improvement propagates to all consumers through a version bum
 - **Master project:** https://github.com/davidfriscia/qavo
 - **This repository (backend):** `qavo-be`
 - **Frontend counterpart:** `qavo-fe` (Angular; not part of this repository)
-- **Current version:** `0.0.0-SNAPSHOT` (early foundation stage — see [Maturity](#maturity-disclaimer))
+- **Current version:** `0.0.1-SNAPSHOT` (early foundation stage — see [Maturity](#maturity-disclaimer))
 
 ---
 
@@ -78,6 +78,8 @@ qavo-be/
 ├── qavo-validation       # Bean Validation integration, custom constraints, error mapping
 ├── qavo-security         # Pluggable auth (local DB baseline + OIDC), secure headers, CORS
 ├── qavo-openapi          # springdoc-openapi integration, plugin-aware documentation
+├── qavo-resilience       # Resilient outbound HTTP: RestClient + Resilience4j + traceId propagation
+├── qavo-auditing         # JPA auditing (AuditableEntity + AuditorAware wired to security context)
 ├── qavo-starter-web      # The "always import" starter: aggregates the above + web wiring
 ├── qavo-auth-login       # Plugin: local login flow (/api/v1/auth/login)
 ├── qavo-auth-registration# Plugin: self-service registration (/api/v1/auth/register)
@@ -169,7 +171,7 @@ A consuming application imports the BOM, the core starter, and the plugins it wa
     <dependency>
       <groupId>org.qavo</groupId>
       <artifactId>qavo-bom</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
+      <version>0.0.1-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -217,7 +219,7 @@ accountability (architecture §12); the same quality and security bar applies to
 
 ## Maturity disclaimer
 
-This is version **`0.0.0-SNAPSHOT`**: an early foundation. The **architecture, contracts, and
+This is version **`0.0.1-SNAPSHOT`**: an early foundation. The **architecture, contracts, and
 extension points are in place and consistent**, but several capabilities are intentionally partial
 (clearly marked in the [capabilities matrix](docs/capabilities-matrix.md) and [roadmap](docs/roadmap.md)).
 APIs may change before `1.0.0`. It is suitable for evaluation and as a starting point, not yet for

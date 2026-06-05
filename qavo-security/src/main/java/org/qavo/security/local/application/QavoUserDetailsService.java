@@ -7,6 +7,7 @@ import java.util.List;
 import org.qavo.security.local.domain.QavoRole;
 import org.qavo.security.local.domain.QavoUser;
 import org.qavo.security.local.infrastructure.QavoUserRepository;
+import org.qavo.security.local.lockout.LockoutService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -24,9 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class QavoUserDetailsService implements UserDetailsService {
 
     private final QavoUserRepository userRepository;
+    private final LockoutService lockoutService;
 
-    public QavoUserDetailsService(QavoUserRepository userRepository) {
+    public QavoUserDetailsService(QavoUserRepository userRepository, LockoutService lockoutService) {
         this.userRepository = userRepository;
+        this.lockoutService = lockoutService;
     }
 
     @Override
@@ -35,11 +38,15 @@ public class QavoUserDetailsService implements UserDetailsService {
         QavoUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("No user with username '%s'".formatted(username)));
 
+        // Combine the historical boolean column with the time-bounded lockout window so an
+        // expired lock automatically lets the user in again without a manual flag flip.
+        boolean locked = !user.isAccountNonLocked() || lockoutService.isLocked(user);
+
         return User.withUsername(user.getUsername())
                 .password(user.getPasswordHash())
                 .authorities(toAuthorities(user))
                 .disabled(!user.isEnabled())
-                .accountLocked(!user.isAccountNonLocked())
+                .accountLocked(locked)
                 .build();
     }
 

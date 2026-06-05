@@ -52,6 +52,8 @@ injection exclusively). Field injection is an anti-pattern here.
 | Add security config | `HttpSecurityCustomizer` bean | Replace `qavoSecurityFilterChain` |
 | Add a capability | A new plugin module | Grow the core |
 | Add DB tables | A migration in your module's reserved location | Use `ddl-auto: update` |
+| Call an upstream HTTP service | `QavoHttpClient` from `qavo-resilience` (declarative retry/circuit-breaker + traceId) | Raw `RestTemplate`/`RestClient` without timeouts |
+| Track who created/modified a row | Extend `AuditableEntity` from `qavo-auditing` | Hand-roll `@PrePersist`/`@PreUpdate` per entity |
 
 Override any platform bean by declaring your own of the same type — every platform bean is
 `@ConditionalOnMissingBean`.
@@ -76,7 +78,7 @@ A plugin is a self-contained Maven module that the application opts into. To cre
        @Bean MyController myController(MyService s) { return new MyController(s); }
 
        @Bean QavoPlugin myPlugin() {
-           return new PluginDescriptor("<capability>", "My Capability", "0.0.0-SNAPSHOT", "...");
+           return new PluginDescriptor("<capability>", "My Capability", "0.0.1-SNAPSHOT", "...");
        }
 
        @Bean PublicPathContributor myPublicPaths() {

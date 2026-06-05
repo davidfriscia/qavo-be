@@ -1,3 +1,5 @@
 org.qavo.security.autoconfigure.QavoSecurityAutoConfiguration
 org.qavo.security.autoconfigure.QavoLocalAuthAutoConfiguration
+org.qavo.security.autoconfigure.QavoLocalJwtAuthAutoConfiguration
 org.qavo.security.autoconfigure.QavoOidcAuthAutoConfiguration
+org.qavo.security.autoconfigure.QavoHybridJwtAuthAutoConfiguration

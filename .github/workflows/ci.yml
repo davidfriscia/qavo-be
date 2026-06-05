@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: MIT — Copyright 2026 Qavo. See LICENSE.
+#
+# Continuous integration for qavo-be. Runs on every push to `main` and on every pull request,
+# building the full reactor and executing the test suite. The build uses Eclipse Temurin 21
+# (matches the Java baseline declared in the parent POM) and caches the local Maven repository
+# keyed by the hash of every pom.xml so dependency resolution is amortised across runs while
+# still picking up any version bumps.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # `--batch-mode` disables ANSI color/progress; `--no-transfer-progress` keeps the log
+      # readable in CI. `verify` runs unit + integration tests across every module.
+      - name: Build
+        run: mvn --batch-mode --no-transfer-progress clean verify

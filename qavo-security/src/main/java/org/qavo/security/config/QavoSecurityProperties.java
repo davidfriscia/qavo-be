@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT — Copyright 2026 Qavo. See LICENSE. */
 package org.qavo.security.config;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,9 @@ public class QavoSecurityProperties {
     @NestedConfigurationProperty
     private final Oidc oidc = new Oidc();
 
+    @NestedConfigurationProperty
+    private final Local local = new Local();
+
     public AuthenticationStrategy getStrategy() {
         return strategy;
     }
@@ -62,6 +66,10 @@ public class QavoSecurityProperties {
 
     public Oidc getOidc() {
         return oidc;
+    }
+
+    public Local getLocal() {
+        return local;
     }
 
     /** Secure HTTP response headers enforced by default (architecture &sect;5.5). */
@@ -235,6 +243,162 @@ public class QavoSecurityProperties {
 
         public void setAuthorityPrefix(String authorityPrefix) {
             this.authorityPrefix = authorityPrefix;
+        }
+    }
+
+    /**
+     * Local authentication strategy configuration (architecture &sect;5.5). Groups every option
+     * that is specific to the DB-backed authentication baseline so OIDC-only applications do not
+     * see noise under {@code qavo.security.local.*} they cannot use.
+     */
+    public static class Local {
+
+        @NestedConfigurationProperty
+        private final Jwt jwt = new Jwt();
+
+        @NestedConfigurationProperty
+        private final Lockout lockout = new Lockout();
+
+        public Jwt getJwt() {
+            return jwt;
+        }
+
+        public Lockout getLockout() {
+            return lockout;
+        }
+
+        /**
+         * Locally issued JWT bearer token policy. The login plugin signs access tokens with
+         * {@link #getSecret() secret} using HMAC-SHA256, embeds {@link #getIssuer() iss} and
+         * {@link #getAudience() aud}, and the security module wires a matching local JWT decoder
+         * so the same tokens are accepted on subsequent authenticated requests. The signing
+         * material must be supplied by configuration; the platform never generates a key at
+         * runtime to avoid silently rotating user sessions on restart.
+         */
+        public static class Jwt {
+
+            /**
+             * Base64-encoded HMAC-SHA256 signing key. Must decode to at least 32 bytes (256 bits).
+             * Required when the local strategy is active and the login plugin is in use; the
+             * platform validates this at startup via {@code EnvironmentPostProcessor} and fails
+             * fast on missing/short keys.
+             */
+            private String secret;
+
+            /** {@code iss} claim stamped on every issued token. */
+            private String issuer = "qavo";
+
+            /** {@code aud} claim stamped on every issued token. */
+            private String audience = "qavo-clients";
+
+            /** Validity window of issued access tokens. Default 30 minutes. */
+            private Duration accessTokenDuration = Duration.ofMinutes(30);
+
+            /** Validity window of issued refresh tokens. Default 7 days. */
+            private Duration refreshTokenDuration = Duration.ofDays(7);
+
+            /** JWT claim that carries roles. Aligned with the OIDC claim name for symmetry. */
+            private String authoritiesClaim = "roles";
+
+            /** Prefix applied to mapped authorities. */
+            private String authorityPrefix = "ROLE_";
+
+            public String getSecret() {
+                return secret;
+            }
+
+            public void setSecret(String secret) {
+                this.secret = secret;
+            }
+
+            public String getIssuer() {
+                return issuer;
+            }
+
+            public void setIssuer(String issuer) {
+                this.issuer = issuer;
+            }
+
+            public String getAudience() {
+                return audience;
+            }
+
+            public void setAudience(String audience) {
+                this.audience = audience;
+            }
+
+            public Duration getAccessTokenDuration() {
+                return accessTokenDuration;
+            }
+
+            public void setAccessTokenDuration(Duration accessTokenDuration) {
+                this.accessTokenDuration = accessTokenDuration;
+            }
+
+            public Duration getRefreshTokenDuration() {
+                return refreshTokenDuration;
+            }
+
+            public void setRefreshTokenDuration(Duration refreshTokenDuration) {
+                this.refreshTokenDuration = refreshTokenDuration;
+            }
+
+            public String getAuthoritiesClaim() {
+                return authoritiesClaim;
+            }
+
+            public void setAuthoritiesClaim(String authoritiesClaim) {
+                this.authoritiesClaim = authoritiesClaim;
+            }
+
+            public String getAuthorityPrefix() {
+                return authorityPrefix;
+            }
+
+            public void setAuthorityPrefix(String authorityPrefix) {
+                this.authorityPrefix = authorityPrefix;
+            }
+        }
+
+        /**
+         * Account lockout / brute-force protection policy. After {@link #getMaxAttempts()}
+         * consecutive failed logins for the same username the account is locked for
+         * {@link #getDuration()}. State is persisted on the user row so it survives restarts.
+         */
+        public static class Lockout {
+
+            /** Whether the policy is active. */
+            private boolean enabled = true;
+
+            /** Consecutive failed-login threshold before lockout. */
+            private int maxAttempts = 5;
+
+            /** Lockout duration applied when the threshold is reached. */
+            private Duration duration = Duration.ofMinutes(15);
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public int getMaxAttempts() {
+                return maxAttempts;
+            }
+
+            public void setMaxAttempts(int maxAttempts) {
+                this.maxAttempts = maxAttempts;
+            }
+
+            public Duration getDuration() {
+                return duration;
+            }
+
+            public void setDuration(Duration duration) {
+                this.duration = duration;
+            }
         }
     }
 }

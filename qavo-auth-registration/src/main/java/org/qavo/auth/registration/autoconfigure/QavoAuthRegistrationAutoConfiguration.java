@@ -39,7 +39,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class QavoAuthRegistrationAutoConfiguration {
 
     public static final String PLUGIN_ID = "auth-registration";
-    public static final String PLUGIN_VERSION = "0.0.0-SNAPSHOT";
+    public static final String PLUGIN_VERSION = "0.0.1-SNAPSHOT";
 
     @Bean
     public RegistrationService qavoRegistrationService(QavoUserRepository userRepository,

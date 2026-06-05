@@ -3,9 +3,14 @@ package org.qavo.security.autoconfigure;
 
 import jakarta.persistence.EntityManagerFactory;
 
+import java.time.Clock;
+
 import org.qavo.core.migration.MigrationLocation;
+import org.qavo.security.config.QavoSecurityProperties;
 import org.qavo.security.local.application.QavoUserDetailsService;
 import org.qavo.security.local.infrastructure.QavoUserRepository;
+import org.qavo.security.local.lockout.AuthenticationEventListener;
+import org.qavo.security.local.lockout.LockoutService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -36,8 +41,35 @@ public class QavoLocalAuthAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public QavoUserDetailsService qavoUserDetailsService(QavoUserRepository userRepository) {
-        return new QavoUserDetailsService(userRepository);
+    public QavoUserDetailsService qavoUserDetailsService(QavoUserRepository userRepository,
+                                                         LockoutService lockoutService) {
+        return new QavoUserDetailsService(userRepository, lockoutService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public LockoutService qavoLockoutService(QavoUserRepository userRepository,
+                                             QavoSecurityProperties securityProperties,
+                                             Clock clock) {
+        return new LockoutService(userRepository,
+                securityProperties.getLocal().getLockout(),
+                clock);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public AuthenticationEventListener qavoAuthenticationEventListener(LockoutService lockoutService) {
+        return new AuthenticationEventListener(lockoutService);
+    }
+
+    /**
+     * Default UTC clock shared by the local-auth components. A test or production application
+     * may publish its own {@code Clock} bean to make time deterministic or zone-specific.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public Clock qavoSecurityClock() {
+        return Clock.systemUTC();
     }
 
     /**

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.qavo</groupId>
+        <artifactId>qavo-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>qavo-resilience</artifactId>
+    <name>Qavo Resilience</name>
+    <description>
+        Outbound HTTP client baseline (architecture §5.7): a small QavoHttpClient API backed by
+        Spring's RestClient and Resilience4j (retry + circuit breaker), with automatic traceId
+        propagation through the X-Trace-Id header so downstream services see the same
+        correlation identifier carried in MDC.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-core</artifactId>
+        </dependency>
+
+        <!-- RestClient lives in spring-web; pulling the web starter keeps the dependency set
+             unambiguous for downstream Spring Boot applications that already use MVC. The
+             starter brings only what RestClient needs at runtime; it does not start a server. -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Resilience4j Spring Boot 3 integration: retry, circuit breaker, time-limiter, and
+             the @ConfigurationProperties wiring under resilience4j.* that we reuse so consumers
+             configure policies with the documented community keys. -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-reactor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Micrometer is already on the classpath of any qavo-observability consumer, but we
+             declare it optional here so Resilience4j's metrics emit cleanly when present and
+             stay quiet when absent. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

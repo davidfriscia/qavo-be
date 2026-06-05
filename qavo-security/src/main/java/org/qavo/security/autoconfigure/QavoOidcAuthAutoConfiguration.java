@@ -39,9 +39,12 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 @ConditionalOnProperty(prefix = "qavo.security.oidc", name = "issuer-uri")
 public class QavoOidcAuthAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    public JwtDecoder qavoJwtDecoder(QavoSecurityProperties properties) {
+    /** Qualifier used to look up the external/OIDC decoder when a composite is built. */
+    public static final String EXTERNAL_JWT_DECODER_BEAN = "qavoExternalJwtDecoder";
+
+    @Bean(EXTERNAL_JWT_DECODER_BEAN)
+    @ConditionalOnMissingBean(name = EXTERNAL_JWT_DECODER_BEAN)
+    public JwtDecoder qavoExternalJwtDecoder(QavoSecurityProperties properties) {
         String jwkSetUri = properties.getOidc().getJwkSetUri();
         if (jwkSetUri != null && !jwkSetUri.isBlank()) {
             return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
@@ -49,13 +52,19 @@ public class QavoOidcAuthAutoConfiguration {
         return JwtDecoders.fromIssuer(properties.getOidc().getIssuerUri());
     }
 
+    /**
+     * Wires the OAuth2 resource server with the OIDC decoder. Active only when the strategy is
+     * purely OIDC; the hybrid path is wired by {@link QavoHybridJwtAuthAutoConfiguration} with a
+     * composite decoder so {@code oauth2ResourceServer} is configured exactly once.
+     */
     @Bean
+    @ConditionalOnExpression("'${qavo.security.strategy:local}'.toLowerCase() == 'oidc'")
     public HttpSecurityCustomizer qavoOidcResourceServerCustomizer(
-            QavoSecurityProperties properties, JwtDecoder jwtDecoder) {
+            QavoSecurityProperties properties, JwtDecoder qavoExternalJwtDecoder) {
         JwtAuthenticationConverter authenticationConverter =
                 buildAuthenticationConverter(properties.getOidc());
         return http -> http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                .decoder(jwtDecoder)
+                .decoder(qavoExternalJwtDecoder)
                 .jwtAuthenticationConverter(authenticationConverter)));
     }
 

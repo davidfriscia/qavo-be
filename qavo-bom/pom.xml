@@ -6,7 +6,7 @@
 
     <groupId>org.qavo</groupId>
     <artifactId>qavo-bom</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Qavo Bill of Materials</name>
@@ -45,6 +45,23 @@
         <resilience4j.version>2.2.0</resilience4j.version>
         <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
         <mapstruct.version>1.6.2</mapstruct.version>
+
+        <!-- JJWT: the JWT implementation the platform standardizes on for local token
+             issuance and validation. Selected for its small surface, clear separation between
+             api / impl / jackson artifacts, and active maintenance. Pinned here so consuming
+             applications need not manage the version themselves. -->
+        <jjwt.version>0.12.6</jjwt.version>
+
+        <!-- Swagger annotations: read by springdoc to enrich OpenAPI documents. Pinned so the
+             platform's plugin modules can declare them as optional dependencies and expose
+             complete @Operation/@ApiResponse metadata without imposing springdoc on consumers. -->
+        <swagger.version>2.2.25</swagger.version>
+
+        <!-- WireMock is the platform's standardized HTTP-stub library for resilience tests.
+             Pinned here so plugin modules and consuming applications can declare it on test
+             scope without choosing a version. The standalone artifact embeds Jetty so it does
+             not collide with the application's servlet container at runtime. -->
+        <wiremock.version>3.9.1</wiremock.version>
     </properties>
 
     <dependencyManagement>
@@ -94,6 +111,40 @@
                 <version>${mapstruct.version}</version>
             </dependency>
 
+            <!-- JJWT — JWT issuance/validation for the local authentication strategy. The
+                 platform exposes the api artifact on compile classpath of consumers and pins
+                 the runtime impl + jackson serializer here so a single Qavo version transitively
+                 governs all three. -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Swagger 3 (OpenAPI) annotations consumed by springdoc. -->
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations-jakarta</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+
+            <!-- WireMock standalone for resilience and integration tests. -->
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock.version}</version>
+            </dependency>
+
             <!-- ============================================================= -->
             <!-- Qavo platform modules                                         -->
             <!-- ============================================================= -->
@@ -122,6 +173,16 @@
             <dependency>
                 <groupId>org.qavo</groupId>
                 <artifactId>qavo-openapi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-resilience</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-auditing</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

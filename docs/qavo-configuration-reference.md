@@ -84,11 +84,44 @@ hardcoded.
 | `authorities-claim` | String | `roles` | JWT claim carrying roles/authorities. |
 | `authority-prefix` | String | `ROLE_` | Prefix applied to mapped authorities. |
 
-## `qavo.auth.login.*` — Login plugin (`qavo-auth-login`)
+### `qavo.security.local.jwt.*`
+
+Active when `qavo.security.strategy` is `local` or `hybrid`. The signing secret is **required**;
+the application fails to start if it is missing or shorter than 32 bytes after Base64 decoding.
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `qavo.auth.login.enabled` | boolean | `true` | Activate the login endpoint. |
+| `secret` | String | — | Base64-encoded HS256 signing key (≥ 32 bytes). Required. Source from a secret manager — never check in. |
+| `issuer` | String | `qavo` | Value placed in the `iss` claim and required on validation. |
+| `audience` | String | `qavo-clients` | Value placed in the `aud` claim and required on validation. |
+| `access-token-duration` | Duration | `PT30M` | Lifetime of issued access tokens. |
+| `refresh-token-duration` | Duration | `P7D` | Lifetime of issued refresh tokens. |
+| `authorities-claim` | String | `roles` | Claim name carrying granted authorities. |
+| `authority-prefix` | String | `ROLE_` | Prefix applied to mapped authorities. |
+
+### `qavo.security.local.lockout.*`
+
+Active when `qavo.security.strategy` is `local` or `hybrid`. Counts consecutive failed local
+logins per username and, on reaching the threshold, returns HTTP `423 Locked` with a Problem
+Details body carrying an `unlocksAt` extension property (RFC 9457). Successful authentication
+resets both the counter and any active lock.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | boolean | `true` | Enable temporary account lockout on repeated failures. |
+| `max-attempts` | int | `5` | Failed-login attempts before the account is locked. |
+| `duration` | Duration | `PT15M` | How long an account stays locked after the threshold is hit. |
+
+## `qavo.auth.login.*` — Login plugin (`qavo-auth-login`)
+
+When enabled, contributes `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`,
+`POST /api/v1/auth/logout`, and `GET /api/v1/auth/me`. The first two are added to
+`qavo.security.public-paths` automatically; `/logout` and `/me` require a bearer token. JWT
+signing is controlled by [`qavo.security.local.jwt.*`](#qavosecuritylocaljwt) above.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `qavo.auth.login.enabled` | boolean | `true` | Activate the login endpoints. |
 
 ## `qavo.auth.registration.*` — Registration plugin (`qavo-auth-registration`)
 
@@ -98,3 +131,29 @@ hardcoded.
 | `qavo.auth.registration.self-service` | boolean | `true` | Allow public self-service sign-up. |
 | `qavo.auth.registration.require-email-verification` | boolean | `false` | Require email verification before activation. |
 | `qavo.auth.registration.default-role` | String | `USER` | Role granted to new users. |
+
+## `qavo.resilience.http.*` — Resilient outbound HTTP client (`qavo-resilience`)
+
+Declares the outbound backends fronted by `QavoHttpClient`. Each entry under `clients` produces
+one client looked up from `QavoHttpClientRegistry` by name; retry and circuit-breaker policies
+for that name are configured under the standard Resilience4j keys
+(`resilience4j.retry.instances.<name>.*` and `resilience4j.circuitbreaker.instances.<name>.*`).
+See [ADR 0008](adr/0008-resilient-outbound-http-client.md).
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `qavo.resilience.http.trace-header` | String | `X-Trace-Id` | Header used to forward the current trace ID on every outbound request. |
+| `qavo.resilience.http.clients.<name>.base-url` | String | — | Base URL prefixed to every relative path used with this client. |
+| `qavo.resilience.http.clients.<name>.connect-timeout` | Duration | `PT2S` | Time allowed to establish a TCP connection. |
+| `qavo.resilience.http.clients.<name>.read-timeout` | Duration | `PT10S` | Time allowed to read a response after the connection is established. |
+
+## `qavo.auditing.*` — Platform JPA auditing (`qavo-auditing`)
+
+Activates Spring Data JPA Auditing across the application and resolves the current auditor
+through the platform's `SecurityContextAccessor`. Entities opt in by extending
+`org.qavo.auditing.AuditableEntity`. See [ADR 0009](adr/0009-platform-jpa-auditing.md).
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `qavo.auditing.enabled` | boolean | `true` | Master switch. When `false`, no auditing autoconfig is applied. |
+| `qavo.auditing.system-principal` | String | `system` | Principal id recorded for writes that happen outside an authenticated request (scheduled jobs, data loaders). |

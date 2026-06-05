@@ -32,6 +32,13 @@ qavo:
     application-name: qavo-reference-app
   security:
     strategy: local
+    local:
+      jwt:
+        # Demo signing key (32 bytes Base64-encoded). NEVER use a hard-coded value like this in
+        # a production deployment — supply the secret via environment variable or secret manager.
+        secret: ZGVtby1xYXZvLWp3dC1zZWNyZXQta2V5LW1pbi0zMmJ5dGVzMTIzNA==
+        issuer: qavo-reference-app
+        audience: qavo-reference-clients
   auth:
     registration:
       self-service: true

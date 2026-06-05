@@ -60,6 +60,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = problemDetailFactory.create(
                 ex.getProblemType(), ex.getProblemType().defaultTitle(), ex.getMessage(), ex.getFieldErrors());
         problem.setInstance(URI.create(request.getRequestURI()));
+        ex.getProblemProperties().forEach(problem::setProperty);
         if (ex.getProblemType().status().is5xxServerError()) {
             log.error("Server-side platform exception", ex);
         }
