@@ -15,6 +15,8 @@ new ADR that supersedes the old one.
 | [0007](0007-account-lockout.md) | Temporary account lockout after repeated failed logins | Accepted |
 | [0008](0008-resilient-outbound-http-client.md) | Resilient outbound HTTP client | Accepted |
 | [0009](0009-platform-jpa-auditing.md) | Platform JPA auditing wired to the security context | Accepted |
+| [0010](0010-notifications-abstraction.md) | Pluggable notifications abstraction | Accepted |
+| [0011](0011-email-verification-design.md) | Email verification design | Accepted |
 
 ## Format
 

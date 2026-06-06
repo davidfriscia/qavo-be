@@ -13,7 +13,7 @@
 
     <groupId>org.qavo</groupId>
     <artifactId>qavo-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Qavo Backend Platform (Parent)</name>
@@ -64,6 +64,7 @@
         <module>qavo-starter-web</module>
         <module>qavo-auth-login</module>
         <module>qavo-auth-registration</module>
+        <module>qavo-notifications</module>
         <module>qavo-test-support</module>
         <module>qavo-reference-app</module>
     </modules>

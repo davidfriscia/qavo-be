@@ -129,8 +129,42 @@ signing is controlled by [`qavo.security.local.jwt.*`](#qavosecuritylocaljwt) ab
 |---|---|---|---|
 | `qavo.auth.registration.enabled` | boolean | `true` | Activate the registration plugin. |
 | `qavo.auth.registration.self-service` | boolean | `true` | Allow public self-service sign-up. |
-| `qavo.auth.registration.require-email-verification` | boolean | `false` | Require email verification before activation. |
+| `qavo.auth.registration.require-email-verification` | boolean | `false` | Legacy switch — newly created users start with `email_verified=false`. Independent of the verification flow below; left in place for callers that just want to gate behavior on the flag without sending email. |
 | `qavo.auth.registration.default-role` | String | `USER` | Role granted to new users. |
+
+### `qavo.auth.registration.email-verification.*`
+
+Opt-in single-use email verification. When `enabled=true`, registration persists a SHA-256-hashed
+token in `qavo_email_verification_tokens`, dispatches the verification email through the
+platform's `NotificationDispatcher`, and exposes
+`GET /api/v1/auth/verify-email?token={raw}` plus
+`POST /api/v1/auth/verify-email/resend`. See [ADR 0011](adr/0011-email-verification-design.md).
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | boolean | `false` | Master switch for the verification flow. When `true`, requires a configured `NotificationDispatcher` provider for the EMAIL channel. |
+| `base-url` | String | — | Public base URL the frontend / verify endpoint is reachable on; the link sent in the email is `{baseUrl}/api/v1/auth/verify-email?token={raw}`. Required when `enabled=true`. |
+| `subject` | String | `Please verify your email address` | Subject of the verification email. |
+| `token-duration` | Duration | `PT24H` | How long a freshly issued token remains valid. |
+| `require-verified-email-to-login` | boolean | `false` | When `true`, the login plugin rejects credential exchange for users with `email_verified=false`, returning 403 with RFC 9457 type `email-not-verified`. The check runs only after credentials and lockout are validated, to avoid account-existence leakage. |
+| `resend-max-per-hour` | int | `3` | Maximum verification emails an end-user can request per rolling hour. Exceeding the ceiling returns 429 with `retryAfterSeconds`. |
+
+## `qavo.notifications.*` — Notification dispatch (`qavo-notifications`)
+
+The notifications module provides a `NotificationDispatcher` facade with built-in EMAIL
+(`JavaMailSender`), TELEGRAM (`QavoHttpClient`), and NONE (no-op) providers. Failures are
+returned as `NotificationResult.failure(...)` and never propagated — business operations are
+never blocked by an unreachable notification backend. See
+[ADR 0010](adr/0010-notifications-abstraction.md).
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `qavo.notifications.enabled` | boolean | `true` | Master switch. When `false`, no providers are autoconfigured (the dispatcher then falls back to the NoOp provider). |
+| `qavo.notifications.email.enabled` | boolean | `false` | Activate the JavaMail provider. Requires Spring Boot's mail autoconfiguration on the classpath plus the standard `spring.mail.*` settings. |
+| `qavo.notifications.email.from` | String | — | Default `From` address used on every dispatched email. Required when `email.enabled=true`; missing values cause dispatch to return failure (logged at WARN). |
+| `qavo.notifications.telegram.enabled` | boolean | `false` | Activate the Telegram Bot API provider. Requires `qavo-resilience` and a registered `QavoHttpClient` named after `client-name`. |
+| `qavo.notifications.telegram.bot-token` | String | — | Telegram bot token used in the `/bot{token}/sendMessage` URL. Source from a secret manager. |
+| `qavo.notifications.telegram.client-name` | String | `telegram` | `QavoHttpClientRegistry` key used to obtain the Telegram outbound client. Match the key under `qavo.resilience.http.clients.*`. |
 
 ## `qavo.resilience.http.*` — Resilient outbound HTTP client (`qavo-resilience`)
 

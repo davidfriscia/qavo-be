@@ -13,13 +13,16 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.qavo.auth.login.application.AuthenticationFailedException;
+import org.qavo.auth.login.application.EmailNotVerifiedException;
 import org.qavo.auth.login.jwt.IssuedTokens;
 import org.qavo.auth.login.jwt.TokenService;
 import org.qavo.core.api.ApiConventions;
 import org.qavo.core.security.AuthenticatedPrincipal;
 import org.qavo.core.security.SecurityContextAccessor;
+import org.qavo.security.local.infrastructure.QavoUserRepository;
 import org.qavo.security.local.lockout.AccountLockedException;
 import org.qavo.security.local.lockout.LockoutService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -55,15 +58,22 @@ public class LoginController {
     private final SecurityContextAccessor securityContextAccessor;
     private final TokenService tokenService;
     private final LockoutService lockoutService;
+    private final QavoUserRepository userRepository;
+    private final boolean requireVerifiedEmail;
 
     public LoginController(AuthenticationManager authenticationManager,
                            SecurityContextAccessor securityContextAccessor,
                            TokenService tokenService,
-                           LockoutService lockoutService) {
+                           LockoutService lockoutService,
+                           QavoUserRepository userRepository,
+                           @Value("${qavo.auth.registration.email-verification.require-verified-email-to-login:false}")
+                           boolean requireVerifiedEmail) {
         this.authenticationManager = authenticationManager;
         this.securityContextAccessor = securityContextAccessor;
         this.tokenService = tokenService;
         this.lockoutService = lockoutService;
+        this.userRepository = userRepository;
+        this.requireVerifiedEmail = requireVerifiedEmail;
     }
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -89,6 +99,17 @@ public class LoginController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password()));
             AuthenticatedUserView user = AuthenticatedUserViewFactory.from(authentication);
+            // Email-verification guard runs AFTER credentials/lockout pass: a wrong password
+            // must not reveal whether the account exists or whether it is verified. The lookup
+            // is by the now-trusted username and is read-only.
+            if (requireVerifiedEmail) {
+                boolean verified = userRepository.findByUsername(user.username())
+                        .map(org.qavo.security.local.domain.QavoUser::isEmailVerified)
+                        .orElse(false);
+                if (!verified) {
+                    throw new EmailNotVerifiedException();
+                }
+            }
             AuthenticatedPrincipal principal = new ViewPrincipal(user);
             IssuedTokens tokens = tokenService.issueFor(principal);
             return LoginResponse.of(

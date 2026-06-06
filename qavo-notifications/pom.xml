@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.qavo</groupId>
+        <artifactId>qavo-parent</artifactId>
+        <version>0.0.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>qavo-notifications</artifactId>
+    <name>Qavo Notifications</name>
+    <description>
+        Outbound notifications plugin (0.0.2-SNAPSHOT): a NotificationDispatcher facade with
+        provider implementations for email (JavaMail), Telegram (over QavoHttpClient), and a
+        no-op fallback. Resolves at runtime via @ConditionalOnProperty so applications opt into
+        each channel via configuration alone, never code.
+    </description>
+
+    <dependencies>
+        <!-- SPI types (NotificationChannel, NotificationRequest, NotificationResult,
+             NotificationService, NotificationDispatcher) live in qavo-core. -->
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-core</artifactId>
+        </dependency>
+
+        <!-- The Telegram provider sends messages over the platform's standardized outbound
+             HTTP client so retries, circuit breakers, and trace propagation are applied
+             uniformly. Optional at runtime: the Telegram provider is only activated when the
+             corresponding property is enabled, in which case a QavoHttpClient named
+             "telegram" must be declared by the consuming application. -->
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-resilience</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Jackson powers JSON serialization for the Telegram provider's outbound requests
+             over Spring's RestClient. Declared explicitly because qavo-resilience pulls
+             spring-web only; consuming applications that use the web starter already have it
+             transitively, but the explicit declaration keeps the notifications module
+             self-contained for the Telegram path. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- JavaMail support. Pulled from spring-boot-dependencies. The email provider is only
+             activated when qavo.notifications.email.enabled=true, so applications that do not
+             use email pay no runtime cost beyond the (small) transitive jar. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Optional: used to publish provider dispatch counters under qavo.notifications.sent.
+             Stays quiet when Micrometer is absent so applications without observability
+             dependencies still receive a functional dispatcher. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- WireMock stubs the Telegram Bot API so the Telegram provider can be exercised
+             end-to-end without network access. -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- GreenMail provides an in-memory SMTP server so the JavaMail provider can be
+             exercised end-to-end without an external relay. -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

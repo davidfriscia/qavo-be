@@ -20,7 +20,7 @@ third-party libraries the platform standardizes on. Then declare modules **witho
     <dependency>
       <groupId>org.qavo</groupId>
       <artifactId>qavo-bom</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.2-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -220,6 +220,83 @@ class Widget extends AuditableEntity {
     private String name;
 }
 ```
+
+## 6c. Notifications (`qavo-notifications`)
+
+Add the dependency to opt in. The dispatcher autowires every `NotificationService` discovered
+on the classpath; if none of EMAIL/TELEGRAM are enabled the platform falls back to a no-op
+provider that returns success and logs a WARN. Inject `NotificationDispatcher` from any service
+and branch on `result.success()`. See [ADR 0010](adr/0010-notifications-abstraction.md).
+
+```yaml
+qavo:
+  notifications:
+    email:
+      enabled: true
+      from: no-reply@example.com
+    telegram:
+      enabled: true
+      bot-token: ${TELEGRAM_BOT_TOKEN}
+      client-name: telegram     # must match qavo.resilience.http.clients.<name>
+  resilience:
+    http:
+      clients:
+        telegram:
+          base-url: https://api.telegram.org
+
+spring:
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+```
+
+```java
+@Service
+class AlertingService {
+    private final NotificationDispatcher dispatcher;
+    AlertingService(NotificationDispatcher dispatcher) { this.dispatcher = dispatcher; }
+
+    void notifyOps(String text) {
+        NotificationResult result = dispatcher.dispatch(
+                NotificationRequest.telegram("123456789", text));
+        if (!result.success()) {
+            log.warn("Alert dispatch failed: {}", result.errorMessage());
+        }
+    }
+}
+```
+
+## 6d. Email verification (`qavo-auth-registration`)
+
+The registration plugin issues a SHA-256-hashed single-use token, emails it via the
+`NotificationDispatcher`, and exposes endpoints under `/api/v1/auth/`. See
+[ADR 0011](adr/0011-email-verification-design.md).
+
+```yaml
+qavo:
+  auth:
+    registration:
+      email-verification:
+        enabled: true
+        base-url: https://app.example.com
+        token-duration: PT24H
+        require-verified-email-to-login: true   # block login until verified
+        resend-max-per-hour: 3
+```
+
+Endpoints:
+
+- `GET  /api/v1/auth/verify-email?token={raw}` → 200 on success, RFC 9457 4xx on failure
+  (`invalid-verification-token`, `verification-token-expired`, `verification-token-already-used`)
+- `POST /api/v1/auth/verify-email/resend` with `{"email":"..."}` → 202 (anti-enumeration) or
+  429 `resend-rate-limited` carrying `retryAfterSeconds`
+- When the guard flag is `true`: `POST /api/v1/auth/login` returns 403 `email-not-verified` for
+  unverified users (only after credentials and lockout pass).
+
+A failed dispatch never rolls back user creation: the user exists with `email_verified=false`
+and can request a fresh token through the resend endpoint.
 
 ## 7. Extension points
 

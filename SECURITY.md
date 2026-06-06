@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Qavo is at an early stage (`0.0.1-SNAPSHOT`). Until a `1.0.0` release, only the latest commit on the
+Qavo is at an early stage (`0.0.2-SNAPSHOT`). Until a `1.0.0` release, only the latest commit on the
 default branch receives security fixes.
 
 ## Reporting a vulnerability

@@ -54,6 +54,8 @@ injection exclusively). Field injection is an anti-pattern here.
 | Add DB tables | A migration in your module's reserved location | Use `ddl-auto: update` |
 | Call an upstream HTTP service | `QavoHttpClient` from `qavo-resilience` (declarative retry/circuit-breaker + traceId) | Raw `RestTemplate`/`RestClient` without timeouts |
 | Track who created/modified a row | Extend `AuditableEntity` from `qavo-auditing` | Hand-roll `@PrePersist`/`@PreUpdate` per entity |
+| Send a notification (email, Telegram, …) | `NotificationDispatcher` from `qavo-core` (provider in `qavo-notifications`) | Inject `JavaMailSender` directly into use-case code |
+| Add a new notification channel | Register a `NotificationService` bean (`supports(channel)` + `send(request)`) | Modify `DefaultNotificationDispatcher` |
 
 Override any platform bean by declaring your own of the same type — every platform bean is
 `@ConditionalOnMissingBean`.
@@ -78,7 +80,7 @@ A plugin is a self-contained Maven module that the application opts into. To cre
        @Bean MyController myController(MyService s) { return new MyController(s); }
 
        @Bean QavoPlugin myPlugin() {
-           return new PluginDescriptor("<capability>", "My Capability", "0.0.1-SNAPSHOT", "...");
+           return new PluginDescriptor("<capability>", "My Capability", "0.0.2-SNAPSHOT", "...");
        }
 
        @Bean PublicPathContributor myPublicPaths() {
@@ -102,6 +104,30 @@ A plugin is a self-contained Maven module that the application opts into. To cre
 
 **Golden rule:** what is not imported does not exist in the application. A plugin must add nothing —
 no beans, endpoints, tables, or attack surface — unless the application imported it.
+
+## 3a. Notification dispatch patterns
+
+The `NotificationDispatcher` returns a `NotificationResult`; it never throws. Treat it as a
+side-effect *outcome*, not a checked operation:
+
+```java
+NotificationResult result = dispatcher.dispatch(
+        NotificationRequest.email(user.getEmail(), "Welcome", body));
+if (!result.success()) {
+    log.warn("Welcome email failed for {}: {}", user.getEmail(), result.errorMessage());
+}
+```
+
+- **Never** roll back a transaction because a notification dispatch failed. Persist the business
+  fact, then dispatch; if delivery fails, the platform's metrics
+  (`qavo.notifications.sent{channel=...,status=failure}`) surface it for ops without breaking
+  the user request.
+- **Custom channels** are registered as additional `NotificationService` beans. The dispatcher
+  iterates providers in `@Order` and picks the first whose `supports(channel)` returns true —
+  giving your bean a lower `@Order` value than the no-op fallback ensures it wins.
+- **Test against `JavaMailNotificationService`** with GreenMail (`com.icegreen:greenmail-junit5`,
+  pinned in `qavo-bom`); test against `TelegramNotificationService` with WireMock as the
+  Telegram Bot API stand-in.
 
 ## 4. Security best practices
 

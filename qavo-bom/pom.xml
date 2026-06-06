@@ -6,7 +6,7 @@
 
     <groupId>org.qavo</groupId>
     <artifactId>qavo-bom</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Qavo Bill of Materials</name>
@@ -62,6 +62,12 @@
              scope without choosing a version. The standalone artifact embeds Jetty so it does
              not collide with the application's servlet container at runtime. -->
         <wiremock.version>3.9.1</wiremock.version>
+
+        <!-- GreenMail is the platform's standardized in-memory SMTP/IMAP server for testing
+             the JavaMail-backed notification provider end-to-end without relying on an external
+             mail relay. The junit5 module wires it as a JUnit 5 extension so notification tests
+             stay self-contained and deterministic. -->
+        <greenmail.version>2.1.0</greenmail.version>
     </properties>
 
     <dependencyManagement>
@@ -145,6 +151,15 @@
                 <version>${wiremock.version}</version>
             </dependency>
 
+            <!-- GreenMail JUnit 5 extension for in-memory SMTP testing of the JavaMail
+                 notification provider. Pinned so notification module tests can declare it on
+                 test scope without choosing a version. -->
+            <dependency>
+                <groupId>com.icegreen</groupId>
+                <artifactId>greenmail-junit5</artifactId>
+                <version>${greenmail.version}</version>
+            </dependency>
+
             <!-- ============================================================= -->
             <!-- Qavo platform modules                                         -->
             <!-- ============================================================= -->
@@ -200,6 +215,14 @@
             <dependency>
                 <groupId>org.qavo</groupId>
                 <artifactId>qavo-auth-registration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Notifications plugin (0.0.2-SNAPSHOT). Provides the dispatcher facade and
+                 the JavaMail/Telegram/no-op channel implementations. -->
+            <dependency>
+                <groupId>org.qavo</groupId>
+                <artifactId>qavo-notifications</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -3,8 +3,8 @@
 Prioritized TODO roadmap for the backend platform, separated by current state. Priorities:
 **P0** (foundational/blocking 1.0), **P1** (important), **P2** (nice to have).
 
-Current version: `0.0.1-SNAPSHOT`. The latest sprint closed the five P0 items listed below
-under *Recently completed*.
+Current version: `0.0.2-SNAPSHOT`. The latest sprint shipped the notifications layer and the
+email-verification flow listed below under *Recently completed (0.0.2-SNAPSHOT)*.
 
 ---
 
@@ -25,6 +25,18 @@ These are in place and consistent (see the [capabilities matrix](capabilities-ma
 - Bean Validation integration with reusable constraints.
 - Testcontainers-based integration-test support.
 - Runnable reference application.
+
+### Recently completed (0.0.2-SNAPSHOT)
+
+- **`qavo-notifications` module** — `NotificationDispatcher` facade with EMAIL
+  (`JavaMailSender`), TELEGRAM (`QavoHttpClient`), and NONE providers; fail-soft contract
+  (`NotificationResult` never throws); Micrometer counters tagged by channel + status. See
+  [ADR 0010](adr/0010-notifications-abstraction.md). **(was P1)**
+- **Email verification flow** — single-use SHA-256-hashed tokens in
+  `qavo_email_verification_tokens`, opt-in via
+  `qavo.auth.registration.email-verification.enabled=true`, anti-enumeration resend with
+  per-hour rate limit, and an optional login guard surfacing 403 `email-not-verified`. See
+  [ADR 0011](adr/0011-email-verification-design.md). **(was P1)**
 
 ### Recently completed (0.0.1-SNAPSHOT)
 
@@ -47,10 +59,10 @@ These are in place and consistent (see the [capabilities matrix](capabilities-ma
 
 | Item | State | Next step | Priority |
 |---|---|---|---|
-| Email verification | Flag + token table modeled | Send verification email; consume token endpoint | P1 |
 | Observability metric set | Micrometer + Actuator wired | Bundle standard metrics + Grafana dashboards | P1 |
 | OIDC claim mapping | Single configurable claim | Nested/array claims, multiple providers, opaque tokens | P1 |
 | Auditing rollout | `AuditableEntity` available; platform tables not yet migrated onto it | Retrofit `QavoUser` / `QavoRole` / `RefreshToken` (column rename + Flyway plan) | P1 |
+| Notifications channels | EMAIL + TELEGRAM + NONE shipped | Add SMS / web-push providers as needed | P2 |
 | Feature flags | Static property-backed | Request-time, DB-backed dynamic flags | P2 |
 
 ## Planned (not started)
@@ -64,7 +76,6 @@ These are in place and consistent (see the [capabilities matrix](capabilities-ma
 
 ### Future modules — **P1/P2**
 - `qavo-user-mgmt` plugin (admin user/role management console API).
-- `qavo-notifications` plugin (email/notification dispatch — unblocks email verification).
 - `qavo-storage` plugin (file storage abstraction).
 - `qavo-audit` plugin (audit log query API on top of `qavo-auditing` columns).
 - `qavo-i18n` support (central message bundle convention + locale resolution).

@@ -49,15 +49,20 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class QavoAuthLoginAutoConfiguration {
 
     public static final String PLUGIN_ID = "auth-login";
-    public static final String PLUGIN_VERSION = "0.0.1-SNAPSHOT";
+    public static final String PLUGIN_VERSION = "0.0.2-SNAPSHOT";
 
     @Bean
     @ConditionalOnMissingBean
     public LoginController qavoLoginController(AuthenticationManager authenticationManager,
                                                SecurityContextAccessor securityContextAccessor,
                                                TokenService tokenService,
-                                               LockoutService lockoutService) {
-        return new LoginController(authenticationManager, securityContextAccessor, tokenService, lockoutService);
+                                               LockoutService lockoutService,
+                                               org.qavo.security.local.infrastructure.QavoUserRepository userRepository,
+                                               @org.springframework.beans.factory.annotation.Value(
+                                                       "${qavo.auth.registration.email-verification.require-verified-email-to-login:false}")
+                                               boolean requireVerifiedEmail) {
+        return new LoginController(authenticationManager, securityContextAccessor, tokenService,
+                lockoutService, userRepository, requireVerifiedEmail);
     }
 
     @Bean
