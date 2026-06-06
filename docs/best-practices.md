@@ -129,6 +129,31 @@ if (!result.success()) {
   pinned in `qavo-bom`); test against `TelegramNotificationService` with WireMock as the
   Telegram Bot API stand-in.
 
+## 3b. Registration capacity cap patterns
+
+The cap (ADR 0012) is a **soft, opt-in** rolling-window limit. A few practical guidelines:
+
+- **Size the cap to the *narrowest* surge you actually want to absorb**, not the daily total.
+  For "no more than 1 000 signups a day" choose `window: PT1H` + `max-registrations: 200`
+  rather than `PT24H` + `1000` — a 1-hour rolling window flattens spikes and reopens sooner.
+- **Always combine the cap with a per-IP rate limit at the edge** (reverse proxy / WAF). The
+  cap is a *global capacity* signal (HTTP 503), not a per-client throttle (HTTP 429); without
+  an upstream rate limit a single abusive client can still keep the cap saturated.
+- **Treat `qavo.registration.cap.utilization` as the primary alert signal.** A sustained value
+  near `1.0` means real users are being turned away; a sudden spike from near-zero is a strong
+  bot indicator. Alert on `rate(qavo.registration.cap.check{result="rejected"}[5m]) > 0` for
+  rapid feedback.
+- **Frontends should poll `GET /api/v1/auth/registration-status` with exponential backoff** and
+  prefer the response `opensAt` / `retryAfter` fields over a fixed interval — the endpoint
+  returns `Cache-Control: no-store` so each poll reflects the live state. Do not poll faster
+  than once every 30 seconds.
+- **Enable `include-unverified: false` only when you also enable email verification.** Without
+  the verification flow nothing ever flips `email_verified=true`, so every event is
+  effectively "unverified" and the cap becomes permanently open.
+- **Do not rely on the cap as a strict quota.** Under concurrent load the maximum may be
+  transiently exceeded by a small margin. If you need a strict quota, layer a domain-specific
+  check on top (e.g. a database `CHECK` constraint or a transactional `SELECT … FOR UPDATE`).
+
 ## 4. Security best practices
 
 - **Secure by default; loosen only deliberately.** Tightening headers is encouraged; loosening

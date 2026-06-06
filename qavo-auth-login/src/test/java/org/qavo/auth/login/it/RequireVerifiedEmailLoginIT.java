@@ -24,7 +24,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Exercises the email-verified login guard introduced in 0.0.2-SNAPSHOT: when
+ * Exercises the email-verified login guard introduced in 0.0.3-SNAPSHOT: when
  * {@code qavo.auth.registration.email-verification.require-verified-email-to-login=true}, the
  * login endpoint must reject credential exchange for a user whose {@code emailVerified=false}
  * with a 403 RFC 9457 problem of type {@code email-not-verified}. Once the user is flipped to

@@ -6,7 +6,7 @@
 
     <groupId>org.qavo</groupId>
     <artifactId>qavo-bom</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Qavo Bill of Materials</name>
@@ -218,7 +218,7 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- Notifications plugin (0.0.2-SNAPSHOT). Provides the dispatcher facade and
+            <!-- Notifications plugin (0.0.3-SNAPSHOT). Provides the dispatcher facade and
                  the JavaMail/Telegram/no-op channel implementations. -->
             <dependency>
                 <groupId>org.qavo</groupId>

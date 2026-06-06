@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.qavo</groupId>
         <artifactId>qavo-parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>qavo-notifications</artifactId>
     <name>Qavo Notifications</name>
     <description>
-        Outbound notifications plugin (0.0.2-SNAPSHOT): a NotificationDispatcher facade with
+        Outbound notifications plugin (0.0.3-SNAPSHOT): a NotificationDispatcher facade with
         provider implementations for email (JavaMail), Telegram (over QavoHttpClient), and a
         no-op fallback. Resolves at runtime via @ConditionalOnProperty so applications opt into
         each channel via configuration alone, never code.

@@ -64,7 +64,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (ex.getProblemType().status().is5xxServerError()) {
             log.error("Server-side platform exception", ex);
         }
-        return ResponseEntity.status(ex.getProblemType().status()).body(problem);
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(ex.getProblemType().status());
+        ex.getResponseHeaders().forEach(builder::header);
+        return builder.body(problem);
     }
 
     /** Method/parameter-level constraint violations (e.g. {@code @Validated} on a service). */

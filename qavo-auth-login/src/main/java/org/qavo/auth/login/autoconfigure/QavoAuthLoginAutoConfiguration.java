@@ -49,7 +49,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class QavoAuthLoginAutoConfiguration {
 
     public static final String PLUGIN_ID = "auth-login";
-    public static final String PLUGIN_VERSION = "0.0.2-SNAPSHOT";
+    public static final String PLUGIN_VERSION = "0.0.3-SNAPSHOT";
 
     @Bean
     @ConditionalOnMissingBean

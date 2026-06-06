@@ -8,6 +8,9 @@ import org.qavo.auth.registration.api.RegisterUserRequest;
 import org.qavo.auth.registration.config.QavoRegistrationProperties;
 import org.qavo.core.domain.exception.BusinessException;
 import org.qavo.core.domain.exception.ConflictException;
+import org.qavo.core.registration.RegistrationCapExceededException;
+import org.qavo.core.registration.RegistrationCapService;
+import org.qavo.core.registration.RegistrationCapStatus;
 import org.qavo.security.local.domain.QavoRole;
 import org.qavo.security.local.domain.QavoUser;
 import org.qavo.security.local.infrastructure.QavoRoleRepository;
@@ -24,6 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
  * issues a single-use verification token and (best-effort) dispatches the verification email
  * via {@link EmailVerificationService} — a delivery failure is logged and does NOT roll back
  * the registration, so the end-user can still request a resend.
+ *
+ * <p>As of 0.0.3-SNAPSHOT the flow also consults {@link RegistrationCapService} before
+ * accepting a request and records a registration event on success (ADR 0012). When the cap is
+ * disabled the default {@code NoOpRegistrationCapService} short-circuits both calls.
  */
 public class RegistrationService {
 
@@ -34,21 +41,30 @@ public class RegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final QavoRegistrationProperties properties;
     private final EmailVerificationService emailVerificationService;
+    private final RegistrationCapService capService;
 
     public RegistrationService(QavoUserRepository userRepository,
                                QavoRoleRepository roleRepository,
                                PasswordEncoder passwordEncoder,
                                QavoRegistrationProperties properties,
-                               EmailVerificationService emailVerificationService) {
+                               EmailVerificationService emailVerificationService,
+                               RegistrationCapService capService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.properties = properties;
         this.emailVerificationService = emailVerificationService;
+        this.capService = capService;
     }
 
     @Transactional
     public QavoUser register(RegisterUserRequest request) {
+        // Step 1: cap check (ADR 0012). The no-op service always reports open=true when the
+        // feature is disabled, so the legacy code path is unchanged for default deployments.
+        RegistrationCapStatus capStatus = capService.checkCap();
+        if (!capStatus.open()) {
+            throw new RegistrationCapExceededException(capStatus);
+        }
         if (!properties.isSelfService()) {
             throw new BusinessException("Self-service registration is currently closed");
         }
@@ -76,6 +92,10 @@ public class RegistrationService {
         user.setEmailVerified(!emailVerificationActive && !properties.isRequireEmailVerification());
 
         QavoUser saved = userRepository.save(user);
+
+        // Step 5: record the registration *after* the user is persisted. The cap service uses
+        // REQUIRES_NEW so the audit row commits independently of this transaction.
+        capService.recordRegistration(saved.getId().toString());
 
         if (emailVerificationActive && emailVerificationService != null) {
             try {

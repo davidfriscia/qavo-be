@@ -6,6 +6,35 @@ All notable changes to the Qavo backend platform are documented here. The format
 
 ## [Unreleased]
 
+## [0.0.3-SNAPSHOT]
+
+### Added
+- **Registration capacity cap** (`qavo-auth-registration`): opt-in rolling-window soft limit on
+  self-service sign-up. New `RegistrationCapService` SPI in `qavo-core` (with the
+  `DatabaseRegistrationCapService` default implementation and a `NoOpRegistrationCapService`
+  fallback). When the configured maximum is reached within the rolling window,
+  `POST /api/v1/auth/register` responds with `503 Service Unavailable`, sets the `Retry-After`
+  header, and emits an RFC 9457 body carrying `opensAt` (ISO-8601 UTC) and `retryAfter`
+  (seconds) extension members. A new public read-only endpoint
+  `GET /api/v1/auth/registration-status` always returns `200 OK` with the same fields and
+  `Cache-Control: no-store`. Configuration lives under `qavo.auth.registration.cap.*`
+  (`enabled`, `max-registrations`, `window`, `include-unverified`) with fail-fast validation at
+  startup. Tagged Micrometer metrics: `qavo.registration.cap.check{result=allowed|rejected}`,
+  `qavo.registration.cap.current_count`, `qavo.registration.cap.utilization`. New RFC 9457
+  problem type: `registration-cap-exceeded`. New Flyway migration
+  `V0011__qavo_registration_events.sql`. See
+  [ADR 0012](docs/adr/0012-registration-capacity-cap.md).
+- **`QavoException.getResponseHeaders()`**: extension hook that lets domain exceptions
+  contribute HTTP response headers (e.g. `Retry-After`) alongside the RFC 9457 body
+  extensions returned by `getProblemProperties()`. The `GlobalExceptionHandler` merges them
+  into every Problem Details response.
+
+### Changed
+- Version bumped from `0.0.2-SNAPSHOT` to `0.0.3-SNAPSHOT` across the reactor, BOM, and plugin
+  descriptors.
+- `qavo-bom` (transitively) covers the optional `micrometer-core` dependency now exposed by
+  the registration plugin for its cap metrics.
+
 ## [0.0.2-SNAPSHOT]
 
 ### Added
@@ -81,6 +110,7 @@ See [docs/capabilities-matrix.md](docs/capabilities-matrix.md) for per-concern s
 [docs/roadmap.md](docs/roadmap.md) for what is planned.
 
 [Unreleased]: https://github.com/davidfriscia/qavo-be
+[0.0.3-SNAPSHOT]: https://github.com/davidfriscia/qavo-be
 [0.0.2-SNAPSHOT]: https://github.com/davidfriscia/qavo-be
 [0.0.1-SNAPSHOT]: https://github.com/davidfriscia/qavo-be
 [0.0.0-SNAPSHOT]: https://github.com/davidfriscia/qavo-be

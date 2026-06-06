@@ -1,0 +1,39 @@
+{
+  "groups": [
+    {
+      "name": "qavo.auth.registration.cap",
+      "type": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "sourceType": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "description": "Registration capacity cap (ADR 0012). When enabled, rejects new registrations once a configurable count is reached within a rolling time window."
+    }
+  ],
+  "properties": [
+    {
+      "name": "qavo.auth.registration.cap.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "description": "Whether the registration capacity cap is active. When false (the default), the no-op cap service is used and every registration is accepted.",
+      "defaultValue": false
+    },
+    {
+      "name": "qavo.auth.registration.cap.max-registrations",
+      "type": "java.lang.Integer",
+      "sourceType": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "description": "Maximum number of registration events permitted within the rolling window. Must be > 0 when 'enabled' is true."
+    },
+    {
+      "name": "qavo.auth.registration.cap.window",
+      "type": "java.time.Duration",
+      "sourceType": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "description": "Rolling window (ISO-8601 duration, e.g. PT24H, PT1H) over which 'max-registrations' is enforced. Must be > 0 when 'enabled' is true."
+    },
+    {
+      "name": "qavo.auth.registration.cap.include-unverified",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.qavo.auth.registration.config.QavoRegistrationCapProperties",
+      "description": "When true (the default), every registration event counts toward the cap. When false, only registrations whose user is currently email-verified count — more permissive but more expensive to evaluate.",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

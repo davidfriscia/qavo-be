@@ -44,7 +44,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 public class QavoNotificationsAutoConfiguration {
 
     public static final String PLUGIN_ID = "notifications";
-    public static final String PLUGIN_VERSION = "0.0.2-SNAPSHOT";
+    public static final String PLUGIN_VERSION = "0.0.3-SNAPSHOT";
 
     /**
      * Email provider. Activated only when both the JavaMail sender bean exists (the consuming

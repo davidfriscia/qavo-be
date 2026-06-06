@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.qavo.auth.registration.api.RegisterUserRequest;
 import org.qavo.auth.registration.config.QavoRegistrationProperties;
+import org.qavo.core.registration.RegistrationCapService;
+import org.qavo.core.registration.RegistrationCapStatus;
 import org.qavo.security.local.domain.QavoRole;
 import org.qavo.security.local.domain.QavoUser;
 import org.qavo.security.local.infrastructure.QavoRoleRepository;
@@ -36,6 +39,7 @@ class RegistrationServiceTest {
     private PasswordEncoder encoder;
     private QavoRegistrationProperties properties;
     private EmailVerificationService verificationService;
+    private RegistrationCapService capService;
     private RegistrationService service;
 
     @BeforeEach
@@ -44,6 +48,9 @@ class RegistrationServiceTest {
         roleRepo = mock(QavoRoleRepository.class);
         encoder = mock(PasswordEncoder.class);
         verificationService = mock(EmailVerificationService.class);
+        capService = mock(RegistrationCapService.class);
+        when(capService.checkCap()).thenReturn(
+                new RegistrationCapStatus(true, 0, 0, null, null, Instant.now()));
         properties = new QavoRegistrationProperties();
         properties.setDefaultRole("USER");
         when(userRepo.existsByUsername(any())).thenReturn(false);
@@ -53,7 +60,8 @@ class RegistrationServiceTest {
         when(encoder.encode(any())).thenReturn("hashed");
         when(userRepo.save(any(QavoUser.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
-        service = new RegistrationService(userRepo, roleRepo, encoder, properties, verificationService);
+        service = new RegistrationService(userRepo, roleRepo, encoder, properties,
+                verificationService, capService);
     }
 
     @Test

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.qavo</groupId>
         <artifactId>qavo-parent</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -48,9 +48,52 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- OpenAPI annotations for richer endpoint documentation. Optional at runtime; the
+             plugin works without springdoc on the classpath. -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Optional: backs the qavo.registration.cap.* counters/gauges. Optional so the
+             plugin remains usable in deployments that do not pull in Micrometer; the
+             registration-cap autoconfiguration falls back to a no-op MeterRegistry when
+             absent. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.qavo</groupId>
+            <artifactId>qavo-starter-web</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -55,4 +55,14 @@ public abstract class QavoException extends RuntimeException {
     public Map<String, Object> getProblemProperties() {
         return Map.of();
     }
+
+    /**
+     * HTTP response headers the global exception handler must set on the error response.
+     * Subclasses override to add transport-level metadata such as {@code Retry-After} that
+     * HTTP-aware clients and proxies act on without parsing the body. Returns an empty map by
+     * default; never {@code null}.
+     */
+    public Map<String, String> getResponseHeaders() {
+        return Map.of();
+    }
 }

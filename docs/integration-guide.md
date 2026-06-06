@@ -298,6 +298,79 @@ Endpoints:
 A failed dispatch never rolls back user creation: the user exists with `email_verified=false`
 and can request a fresh token through the resend endpoint.
 
+## 6e. Registration capacity cap (`qavo-auth-registration`)
+
+A rolling-window **soft cap** on how many users can be created in a configurable time window.
+Useful for closed betas, free-tier ceilings, or smoothing a launch-day spike. Disabled by
+default — no behavioral change to existing deployments. See
+[ADR 0012](adr/0012-registration-capacity-cap.md).
+
+Worked example — *"accept at most 50 new users per day"*:
+
+```yaml
+qavo:
+  auth:
+    registration:
+      cap:
+        enabled: true
+        max-registrations: 50
+        window: PT24H              # rolling 24 hours; no fixed midnight reset
+        include-unverified: true   # count every registration event
+```
+
+Once the cap is reached, `POST /api/v1/auth/register` returns:
+
+```http
+HTTP/1.1 503 Service Unavailable
+Content-Type: application/problem+json
+Retry-After: 7240
+
+{
+  "type": "https://errors.qavo.org/registration-cap-exceeded",
+  "title": "Registration Temporarily Unavailable",
+  "status": 503,
+  "code": "registration-cap-exceeded",
+  "detail": "The maximum number of registrations for the current period has been reached.",
+  "opensAt": "2026-06-02T11:00:00Z",
+  "retryAfter": 7240,
+  "traceId": "..."
+}
+```
+
+The companion read-only status endpoint is **always 200 OK** (the frontend can poll it without
+triggering error banners) and is reachable without authentication:
+
+```http
+GET /api/v1/auth/registration-status
+Cache-Control: no-store
+
+# When open (cap disabled or under-capacity)
+{ "open": true, "checkedAt": "2026-06-01T12:00:00Z" }
+
+# When closed
+{
+  "open": false,
+  "currentCount": 50,
+  "maxRegistrations": 50,
+  "windowDuration": "PT24H",
+  "opensAt": "2026-06-02T11:00:00Z",
+  "retryAfter": 7240,
+  "checkedAt": "2026-06-01T12:00:00Z"
+}
+```
+
+Operational signals (Micrometer):
+
+| Meter | Type | Tags | Meaning |
+|---|---|---|---|
+| `qavo.registration.cap.check` | Counter | `result=allowed\|rejected` | One increment per cap-check call. |
+| `qavo.registration.cap.current_count` | Gauge | — | Number of registrations currently inside the rolling window. |
+| `qavo.registration.cap.utilization` | Gauge | — | `currentCount / maxRegistrations` in `[0.0, 1.0]`. |
+
+> **Concurrency note.** The cap is intentionally a **soft** limit: under load the configured
+> maximum may transiently be exceeded by a small margin (one extra registration per concurrent
+> in-flight check). This is the documented trade-off — see ADR 0012 for the rationale.
+
 ## 7. Extension points
 
 | Extension point | Purpose |

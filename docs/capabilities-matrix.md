@@ -1,6 +1,6 @@
 # Qavo Backend — Capabilities Matrix
 
-Status of each backend concern at version `0.0.2-SNAPSHOT`.
+Status of each backend concern at version `0.0.3-SNAPSHOT`.
 
 **Legend:** ✅ Implemented · 🟡 Partial · ⛔ Planned (not yet started) · ⬜ Out of scope (deliberate)
 
@@ -29,6 +29,7 @@ Status of each backend concern at version `0.0.2-SNAPSHOT`.
 | 16 | Secrets management (Vault, etc.) | ⬜ | Out of scope | Env-var supplied secrets | Deferred by architecture §5.5 |
 | 17 | Pluggable config providers | ⬜ | Out of scope | Spring profiles + env vars | Deferred by architecture §5.6 |
 | 18 | Theming, mobile-first/responsive | ⬜ | Frontend | — | Lives in `qavo-fe` |
+| 19 | Registration capacity cap | ✅ | Beta | `qavo-auth-registration`: rolling-window DB-backed counter (`qavo_registration_events`), `RegistrationCapService` SPI in `qavo-core`, 503 with `Retry-After` header + RFC 9457 `opensAt` / `retryAfter` extensions, public read-only `GET /api/v1/auth/registration-status`, Micrometer metrics (`qavo.registration.cap.check`, `qavo.registration.cap.current_count`, `qavo.registration.cap.utilization`), opt-in `include-unverified=false` mode (see [ADR 0012](adr/0012-registration-capacity-cap.md)) | Distributed/strict cap (would require a leader-election or a DB advisory lock); per-tenant cap |
 
 ## Maturity definitions
 
@@ -37,7 +38,7 @@ Status of each backend concern at version `0.0.2-SNAPSHOT`.
 - **Alpha** — minimal implementation proving the contract; expect change.
 - **Planned** — extension point and/or dependency present; behavior not yet implemented.
 
-## Known limitations at `0.0.2-SNAPSHOT`
+## Known limitations at `0.0.3-SNAPSHOT`
 
 - Password reset and Argon2 hashing for the local strategy are still pending.
 - The standard operational metric set and Grafana dashboards are described but not yet bundled.
@@ -52,3 +53,12 @@ Status of each backend concern at version `0.0.2-SNAPSHOT`.
   pluggable template/i18n hook is planned.
 - CI runs `mvn clean verify` on every PR; release publishing (Maven Central signing) is not yet
   configured.
+- The registration capacity cap is a **soft cap**: the check-then-record sequence is not
+  protected by a distributed lock, so under concurrent load the configured maximum may
+  transiently be exceeded by a small margin (one extra registration per concurrent in-flight
+  check). This is the documented design trade-off; see
+  [ADR 0012](adr/0012-registration-capacity-cap.md). A strict / distributed enforcement mode
+  is not yet planned.
+- `GET /api/v1/auth/registration-status` is a poll-only endpoint; there is no server-push
+  channel that notifies clients when the cap reopens. Frontends are expected to back off
+  exponentially using the response `opensAt` / `retryAfter` fields.

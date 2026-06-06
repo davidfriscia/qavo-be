@@ -149,6 +149,23 @@ platform's `NotificationDispatcher`, and exposes
 | `require-verified-email-to-login` | boolean | `false` | When `true`, the login plugin rejects credential exchange for users with `email_verified=false`, returning 403 with RFC 9457 type `email-not-verified`. The check runs only after credentials and lockout are validated, to avoid account-existence leakage. |
 | `resend-max-per-hour` | int | `3` | Maximum verification emails an end-user can request per rolling hour. Exceeding the ceiling returns 429 with `retryAfterSeconds`. |
 
+### `qavo.auth.registration.cap.*`
+
+Opt-in **registration capacity cap**: a rolling-window soft limit on how many users can be
+created in a configurable time window. The default no-op implementation is wired when
+`enabled=false` (the default) so existing deployments see no behavioral change. When the cap is
+reached, `POST /api/v1/auth/register` responds with `503 Service Unavailable`, a `Retry-After`
+header, and an RFC 9457 body carrying the `opensAt` (ISO-8601 UTC) and `retryAfter` (seconds)
+extension members. The public read-only `GET /api/v1/auth/registration-status` endpoint always
+returns `200 OK` with the same fields. See [ADR 0012](adr/0012-registration-capacity-cap.md).
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | boolean | `false` | Master switch. When `false`, the no-op cap service is used and every registration is accepted. |
+| `max-registrations` | int | — | Maximum number of registration events permitted within the rolling window. Required and must be `> 0` when `enabled=true` (application fails to start otherwise). |
+| `window` | Duration | — | Rolling window (ISO-8601 duration, e.g. `PT24H`, `PT1H`) over which `max-registrations` is enforced. Required and must be `> 0` when `enabled=true`. |
+| `include-unverified` | boolean | `true` | When `true`, every registration event counts toward the cap. When `false`, only registrations whose user is currently email-verified count — more permissive but more expensive to evaluate (one extra user lookup per event in window). |
+
 ## `qavo.notifications.*` — Notification dispatch (`qavo-notifications`)
 
 The notifications module provides a `NotificationDispatcher` facade with built-in EMAIL

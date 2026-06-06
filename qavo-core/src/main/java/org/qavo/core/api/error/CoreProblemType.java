@@ -25,6 +25,7 @@ public enum CoreProblemType implements ProblemType {
     VERIFICATION_TOKEN_EXPIRED("verification-token-expired", "Verification token expired", HttpStatus.BAD_REQUEST),
     VERIFICATION_TOKEN_ALREADY_USED("verification-token-already-used", "Verification token already used", HttpStatus.BAD_REQUEST),
     RESEND_RATE_LIMITED("resend-rate-limited", "Too many resend attempts", HttpStatus.TOO_MANY_REQUESTS),
+    REGISTRATION_CAP_EXCEEDED("registration-cap-exceeded", "Registration Temporarily Unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     METHOD_NOT_ALLOWED("method-not-allowed", "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
     UNSUPPORTED_MEDIA_TYPE("unsupported-media-type", "Unsupported media type", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
     TOO_MANY_REQUESTS("too-many-requests", "Too many requests", HttpStatus.TOO_MANY_REQUESTS),

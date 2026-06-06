@@ -14,7 +14,7 @@ behavior. A fix or improvement propagates to all consumers through a version bum
 - **Master project:** https://github.com/davidfriscia/qavo
 - **This repository (backend):** `qavo-be`
 - **Frontend counterpart:** `qavo-fe` (Angular; not part of this repository)
-- **Current version:** `0.0.2-SNAPSHOT` (early foundation stage — see [Maturity](#maturity-disclaimer))
+- **Current version:** `0.0.3-SNAPSHOT` (early foundation stage — see [Maturity](#maturity-disclaimer))
 
 ---
 
@@ -172,7 +172,7 @@ A consuming application imports the BOM, the core starter, and the plugins it wa
     <dependency>
       <groupId>org.qavo</groupId>
       <artifactId>qavo-bom</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>0.0.3-SNAPSHOT</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -220,7 +220,7 @@ accountability (architecture §12); the same quality and security bar applies to
 
 ## Maturity disclaimer
 
-This is version **`0.0.2-SNAPSHOT`**: an early foundation. The **architecture, contracts, and
+This is version **`0.0.3-SNAPSHOT`**: an early foundation. The **architecture, contracts, and
 extension points are in place and consistent**, but several capabilities are intentionally partial
 (clearly marked in the [capabilities matrix](docs/capabilities-matrix.md) and [roadmap](docs/roadmap.md)).
 APIs may change before `1.0.0`. It is suitable for evaluation and as a starting point, not yet for

@@ -3,8 +3,8 @@
 Prioritized TODO roadmap for the backend platform, separated by current state. Priorities:
 **P0** (foundational/blocking 1.0), **P1** (important), **P2** (nice to have).
 
-Current version: `0.0.2-SNAPSHOT`. The latest sprint shipped the notifications layer and the
-email-verification flow listed below under *Recently completed (0.0.2-SNAPSHOT)*.
+Current version: `0.0.3-SNAPSHOT`. The latest sprint shipped the registration capacity cap
+(ADR 0012) listed below under *Recently completed (0.0.3-SNAPSHOT)*.
 
 ---
 
@@ -25,6 +25,15 @@ These are in place and consistent (see the [capabilities matrix](capabilities-ma
 - Bean Validation integration with reusable constraints.
 - Testcontainers-based integration-test support.
 - Runnable reference application.
+
+### Recently completed (0.0.3-SNAPSHOT)
+
+- **Registration capacity cap** — opt-in rolling-window DB-backed counter
+  (`qavo_registration_events`) with `RegistrationCapService` SPI in `qavo-core`, 503 +
+  `Retry-After` header + RFC 9457 `opensAt` / `retryAfter` extensions, public read-only
+  `GET /api/v1/auth/registration-status`, Micrometer metrics, and an optional verified-only
+  counting mode. Disabled by default (no behavioral change for existing deployments). See
+  [ADR 0012](adr/0012-registration-capacity-cap.md). **(was P1)**
 
 ### Recently completed (0.0.2-SNAPSHOT)
 

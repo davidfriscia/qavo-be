@@ -17,6 +17,7 @@ new ADR that supersedes the old one.
 | [0009](0009-platform-jpa-auditing.md) | Platform JPA auditing wired to the security context | Accepted |
 | [0010](0010-notifications-abstraction.md) | Pluggable notifications abstraction | Accepted |
 | [0011](0011-email-verification-design.md) | Email verification design | Accepted |
+| [0012](0012-registration-capacity-cap.md) | Registration capacity cap | Accepted |
 
 ## Format
 
